@@ -11,7 +11,7 @@ RUN gradle build -x test --no-daemon
 FROM openjdk:17-alpine
 WORKDIR /app
 
-EXPOSE 8888
+EXPOSE ${CONFIG_PORT}
 
 COPY --from=build /app/build/libs/*.jar app.jar
 
