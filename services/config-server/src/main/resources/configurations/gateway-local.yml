@@ -1,0 +1,73 @@
+server:
+  port: ${GATEWAY_PORT}
+
+spring:
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "*"
+            allowed-methods:
+              - GET
+              - POST
+              - UPDATE
+              - PATCH
+              - OPTIONS
+              - PUT
+              - DELETE
+            allowed-headers: "*"
+        add-to-simple-url-handler-mapping: true
+      routes:
+        - id: marketdetails
+          uri: lb://marketdata
+          predicates:
+            - Path=/market-data/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+
+springdoc:
+  enable-native-support: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: /market-data/v3/api-docs
+        name: Market Data Api
+        primaryName: Market Data Api
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG
+    org.springframework.web: DEBUG
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${DISCOVERY_PORT}/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

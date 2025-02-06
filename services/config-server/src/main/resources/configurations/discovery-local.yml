@@ -1,0 +1,18 @@
+server:
+  port: ${DISCOVERY_PORT}
+
+spring:
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${DISCOVERY_PORT}/eureka/
