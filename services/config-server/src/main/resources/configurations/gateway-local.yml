@@ -58,13 +58,11 @@ logging:
     org.springframework.web: DEBUG
 
 eureka:
-  instance:
-    hostname: localhost
   client:
     registerWithEureka: true
     fetchRegistry: true
     service-url:
-      defaultZone: http://${eureka.instance.hostname}:${DISCOVERY_PORT}/eureka/
+      defaultZone: ${DISCOVERY_SERVER_URL}
 
 management:
   endpoints:

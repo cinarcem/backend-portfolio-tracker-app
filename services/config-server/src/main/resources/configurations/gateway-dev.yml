@@ -62,9 +62,7 @@ eureka:
     registerWithEureka: true
     fetchRegistry: true
     service-url:
-      defaultZone: http://${eureka.instance.hostname}:${discovery.DISCOVERY_PORT}/eureka/
-  instance:
-    hostname: discovery
+      defaultZone: ${DISCOVERY_SERVER_URL}
     # Notes for railway deployment
     # Load Balancer must use Railway's private domain name instead of Local IP.
     # Set preferIpAddress as true on prod. Set preferIpAddress as false on local
