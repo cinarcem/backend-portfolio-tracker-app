@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: ${ENVIRONMENT_NAME}
+    active: ${RAILWAY_ENVIRONMENT_NAME}
   config:
     import: optional:configserver:http://localhost:${CONFIG_PORT}
   application:
