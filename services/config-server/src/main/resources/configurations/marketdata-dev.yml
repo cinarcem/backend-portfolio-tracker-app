@@ -1,0 +1,45 @@
+server:
+  port: ${MARKET_DATA_PORT}
+
+spring:
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+openapi:
+  service:
+    title: Market Data Api doc
+    version: 1.0.0
+    url: https://${gateway.RAILWAY_PUBLIC_DOMAIN}
+
+springdoc:
+  api-docs:
+    path: /market-data/v3/api-docs
+  swagger-ui:
+    path: /market-data/swagger-ui.html
+
+eureka:
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${discovery.DISCOVERY_PORT}/eureka/
+  instance:
+    hostname: discovery
+    # Notes for railway deployment
+    # Load Balancer must use Railway's private domain name instead of Local IP.
+    # Set preferIpAddress as true on prod. Set preferIpAddress as false on local
+    preferIpAddress: false
+    non-secure-port-enabled: true
+    secure-port-enabled: false
+    non-secure-port: ${MARKET_DATA_PORT}
+    secure-port: 443
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
