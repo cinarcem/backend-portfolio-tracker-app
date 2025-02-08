@@ -20,7 +20,7 @@ public class OpenApiConfigs {
             @Value("${openapi.service.version}") String serviceVersion,
             @Value("${openapi.service.url}") String url) {
         return new OpenAPI()
-                .servers(List.of(new Server().url("https://gateway-portfolio-tracker-app-dev.up.railway.app")))
+                .servers(List.of(new Server().url(url)))
                 .info(new Info().title(serviceTitle).version(serviceVersion));
     }
 
