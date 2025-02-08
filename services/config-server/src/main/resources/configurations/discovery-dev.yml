@@ -9,11 +9,6 @@ spring:
       enabled: true
 
 eureka:
-  instance:
-    hostname: localhost
   client:
     register-with-eureka: false
     fetch-registry: false
-    serviceUrl:
-      defaultZone: http://${RAILWAY_SERVICE_NAME}:${DISCOVERY_PORT}/eureka/
-
