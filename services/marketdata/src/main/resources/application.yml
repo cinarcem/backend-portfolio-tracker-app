@@ -2,6 +2,6 @@ spring:
   profiles:
     active: ${RAILWAY_ENVIRONMENT_NAME}
   config:
-    import: optional:configserver:http://localhost:${CONFIG_PORT}
+    import: configserver:configserver:${CONFIG_SERVER_URL}
   application:
     name: marketdata
