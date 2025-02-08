@@ -2,6 +2,6 @@ spring:
   profiles:
     active: ${RAILWAY_ENVIRONMENT_NAME}
   config:
-    import: configserver:${CONFIG_SERVER_URL}
+    import: optional:configserver:${CONFIG_SERVER_URL}
   application:
     name: gateway
