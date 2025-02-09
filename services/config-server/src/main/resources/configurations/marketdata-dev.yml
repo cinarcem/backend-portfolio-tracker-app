@@ -26,6 +26,8 @@ eureka:
     fetchRegistry: true
     service-url:
       defaultZone: ${DISCOVERY_SERVER_URL}
+  instance:
+    hostname: ${RAILWAY_SERVICE_NAME}
     # Notes for railway deployment
     # Load Balancer must use Railway's private domain name instead of Local IP.
     # Set preferIpAddress as true on prod. Set preferIpAddress as false on local
