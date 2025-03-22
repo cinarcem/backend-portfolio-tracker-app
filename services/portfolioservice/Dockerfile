@@ -1,19 +1,12 @@
-FROM gradle:8.12.1-jdk17 AS build
-WORKDIR /app
 
+FROM gradle:7.6.2-jdk17 AS build
+WORKDIR /app
 COPY build.gradle settings.gradle ./
-RUN gradle build --no-daemon -x test || true
-
 COPY src ./src
-RUN gradle build -x test --no-daemon
+RUN gradle build -x test
 
-FROM openjdk:17-alpine
-WORKDIR /app
-
+FROM openjdk:17
 EXPOSE ${PORTFOLIO_SERVICE_PORT}
-
+WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
-
-ENV TZ=Europe/Istanbul
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
