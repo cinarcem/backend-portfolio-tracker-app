@@ -11,7 +11,7 @@ RUN gradle build -x test --no-daemon
 FROM openjdk:17-alpine
 WORKDIR /app
 
-EXPOSE ${GATEWAY_PORT}
+EXPOSE ${PORTFOLIO_SERVICE_PORT}
 
 COPY --from=build /app/build/libs/*.jar app.jar
 
