@@ -2,10 +2,9 @@ FROM gradle:8.12.1-jdk17 AS build
 WORKDIR /app
 
 COPY build.gradle settings.gradle ./
-RUN gradle dependencies --no-daemon
+RUN gradle build --no-daemon -x test || true
 
 COPY src ./src
-
 RUN gradle build -x test --no-daemon
 
 FROM openjdk:17-alpine

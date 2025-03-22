@@ -23,7 +23,7 @@ openapi:
   service:
     title: Portfolio Service Api doc
     version: 1.0.0
-    url: http://localhost:${GATEWAY_PORT}
+    url: https://portfolio-tracker-app-dev.up.railway.app
 
 springdoc:
   api-docs:
