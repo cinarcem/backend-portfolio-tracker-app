@@ -3,8 +3,9 @@ package com.portfoliotracker.marketdata.controller;
 import com.portfoliotracker.marketdata.common.ApiCustomResponse;
 import com.portfoliotracker.marketdata.common.ErrorDetails;
 import com.portfoliotracker.marketdata.model.Index;
-import com.portfoliotracker.marketdata.model.Stock;
 import com.portfoliotracker.marketdata.service.IndexService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +25,17 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/market-data/v1")
-public class IndexController {
+public class IndexApi {
 
     private final IndexService indexService;
 
-    @GetMapping("/all-index-symbols")
+    @GetMapping("/indexes/symbols")
+    @Operation(
+            summary = "Get all index symbols",
+            description = "This endpoint retrieves all available index symbols and their names from the market data. " +
+                    "The response includes a map where the key is the index symbol, " +
+                    "and the value is the corresponding name."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode  = "200", description  = "Index symbols successfully received."),
             @ApiResponse(responseCode  = "500", description  = "No market data found.")
@@ -54,13 +61,23 @@ public class IndexController {
 
     }
 
-    @GetMapping("/indexes-market-data")
+    @GetMapping("/indexes")
+    @Operation(
+            summary = "Retrieve market data for specified indexes",
+            description = "This endpoint retrieves market data for the given list of index symbols. The response " +
+                    "includes detailed market data. If some symbols are " +
+                    "missing from the response, an appropriate message will be returned with the list of missing " +
+                    "symbols."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode  = "200", description  = "Index symbols successfully received."),
             @ApiResponse(responseCode  = "206", description  = "Partial data received."),
             @ApiResponse(responseCode  = "500", description  = "No market data found.")
     })
-    public ResponseEntity<ApiCustomResponse<List<Index>>> getIndexesMarketData(WebRequest webRequest, @RequestParam List<String> symbols) {
+    public ResponseEntity<ApiCustomResponse<List<Index>>> getIndexesMarketData(
+            WebRequest webRequest,
+            @Parameter(description = "A list of index symbols to fetch market data.")
+            @RequestParam List<String> symbols) {
         String path = webRequest.getDescription(false).replace("uri=", "");
         String responseMessage;
         List<ErrorDetails> errors = new ArrayList<>(List.of());

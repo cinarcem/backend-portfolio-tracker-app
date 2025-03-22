@@ -1,0 +1,47 @@
+server:
+  port: ${PORTFOLIO_DATA_PORT}
+
+spring:
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+      hibernate.ddl-auto: update
+      show-sql: true
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+
+openapi:
+  service:
+    title: Portfolio Service Api doc
+    version: 1.0.0
+    url: http://localhost:${GATEWAY_PORT}
+
+springdoc:
+  api-docs:
+    path: /portfolio/v3/api-docs
+  swagger-ui:
+    path: /portfolio/swagger-ui.html
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    fetch-registry: false
+    serviceUrl:
+      defaultZone: ${DISCOVERY_SERVER_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+

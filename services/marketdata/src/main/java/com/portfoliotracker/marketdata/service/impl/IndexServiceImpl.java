@@ -30,7 +30,7 @@ public class IndexServiceImpl implements IndexService {
 
     private Document document;
 
-    @Value(("${INDEX_DATA_URL}"))
+    @Value("${INDEX_DATA_URL}")
     private String indexDataUrl;
 
     private Map<String, Index> indexesMarketData = new ConcurrentHashMap<>();

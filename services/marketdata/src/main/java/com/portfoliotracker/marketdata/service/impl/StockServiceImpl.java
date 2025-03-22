@@ -46,7 +46,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public Map<String, Stock>  getStocksMarketData(List<String> stockSymbols) {
-        Map<String, Stock>  response = new HashMap<>();
+        Map<String, Stock>  response = new LinkedHashMap<>();
 
         if(stocksMarketData.keySet().isEmpty()){
             throw new NoMarketDataFoundException();

@@ -4,6 +4,8 @@ import com.portfoliotracker.marketdata.common.ApiCustomResponse;
 import com.portfoliotracker.marketdata.common.ErrorDetails;
 import com.portfoliotracker.marketdata.model.Stock;
 import com.portfoliotracker.marketdata.service.StockService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +26,17 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/market-data/v1")
-public class StockController {
+public class StockApi {
 
     private final StockService stockService;
 
-    @GetMapping("/all-stock-symbols")
+    @GetMapping("/stocks/symbols")
+    @Operation(
+            summary = "Get all stock symbols",
+            description = "This endpoint retrieves all available stock symbols and their names from the market data. " +
+                    "The response includes a map where the key is the stock symbol, " +
+                    "and the value is the corresponding name."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode  = "200", description  = "Market data successfully received for given symbols."),
             @ApiResponse(responseCode  = "500", description  = "No market data found.")
@@ -52,13 +60,23 @@ public class StockController {
         return ResponseEntity.ok(apiCustomResponse);
     }
 
-    @GetMapping("/stocks-market-data")
+    @GetMapping("/stocks")
+    @Operation(
+            summary = "Retrieve market data for specified stocks.",
+            description = "This endpoint retrieves market data for the given list of stock symbols. The response " +
+                    "includes detailed market data. If some symbols are " +
+                    "missing from the response, an appropriate message will be returned with the list of missing " +
+                    "symbols."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode  = "200", description  = "Market data successfully received for given symbols."),
             @ApiResponse(responseCode  = "206", description  = "Partial data received."),
             @ApiResponse(responseCode  = "400", description  = "Symbols are not valid.")
     })
-    public ResponseEntity<ApiCustomResponse<List<Stock>>> getStocksMarketData(WebRequest webRequest, @RequestParam List<String> symbols) {
+    public ResponseEntity<ApiCustomResponse<List<Stock>>> getStocksMarketData(
+            WebRequest webRequest,
+            @Parameter(description = "A list of stock symbols to fetch market data.")
+            @RequestParam List<String> symbols) {
 
         String path = webRequest.getDescription(false).replace("uri=", "");
         String responseMessage;
