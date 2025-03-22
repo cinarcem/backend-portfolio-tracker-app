@@ -66,9 +66,3 @@ eureka:
   instance:
     hostname: ${RAILWAY_SERVICE_NAME}
     preferIpAddress: false
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health

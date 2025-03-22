@@ -73,9 +73,3 @@ eureka:
     fetchRegistry: true
     service-url:
       defaultZone: ${DISCOVERY_SERVER_URL}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
