@@ -42,4 +42,7 @@ management:
     web:
       exposure:
         include: health
+  metrics:
+    enable:
+      processor: false
 
