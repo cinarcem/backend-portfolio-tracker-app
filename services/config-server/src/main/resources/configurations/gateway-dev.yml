@@ -30,11 +30,18 @@ spring:
             allowed-headers: ${ALLOWED_HEADERS}
         add-to-simple-url-handler-mapping: true
       routes:
-        - id: marketdetails
+        - id: marketdataapi
           uri: lb://marketdata
           predicates:
             - Path=/market-data/**
             - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+        - id: portfolioapi
+          uri: lb://portfolioservice
+          predicates:
+            - Path=/portfolio/**
+            - Method=GET,POST,DELETE
           filters:
             - RemoveRequestHeader=Cookie
 
@@ -50,6 +57,9 @@ springdoc:
       - url: /market-data/v3/api-docs
         name: Market Data Api
         primaryName: Market Data Api
+      - url: /portfolio/v3/api-docs
+        name: Portfolio Api
+        primaryName: Portfolio Api
 
 logging:
   level:
