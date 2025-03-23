@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class PortfolioTransactionRequest {
 
     @NotNull(message = "Date cannot be null")
