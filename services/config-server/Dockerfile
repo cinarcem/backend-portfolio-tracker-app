@@ -2,19 +2,14 @@ FROM gradle:8.12.1-jdk17 AS build
 WORKDIR /app
 
 COPY build.gradle settings.gradle ./
-RUN gradle dependencies --no-daemon
+RUN gradle dependencies
 
 COPY src ./src
+RUN gradle build -x test
 
-RUN gradle build -x test --no-daemon
-
-FROM openjdk:17-alpine
+FROM openjdk:17-jdk-slim
+EXPOSE $CONFIG_PORT
 WORKDIR /app
-
-EXPOSE ${GATEWAY_PORT}
-
 COPY --from=build /app/build/libs/*.jar app.jar
-
-ENV TZ=Europe/Istanbul
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
