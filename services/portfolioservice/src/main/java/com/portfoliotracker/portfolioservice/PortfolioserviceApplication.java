@@ -5,7 +5,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoC
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@SpringBootApplication(exclude = {SystemMetricsAutoConfiguration.class})
+@SpringBootApplication
 @EnableDiscoveryClient
 public class PortfolioserviceApplication {
 
