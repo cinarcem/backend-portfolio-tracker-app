@@ -118,6 +118,7 @@ public class PortfolioTransactionApi {
             WebRequest webRequest,
             @PathVariable String userId
     ){
+
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());
 
