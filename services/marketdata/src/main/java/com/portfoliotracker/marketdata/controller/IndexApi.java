@@ -24,7 +24,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/market-data/v1")
+@RequestMapping("/market-data/api/v1")
 public class IndexApi {
 
     private final IndexService indexService;

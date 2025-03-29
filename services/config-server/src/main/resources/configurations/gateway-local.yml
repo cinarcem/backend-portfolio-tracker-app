@@ -7,6 +7,11 @@ spring:
       enabled: true
     livereload:
       enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI}
   cloud:
     gateway:
       discovery:
@@ -40,8 +45,22 @@ spring:
         - id: portfolioapi
           uri: lb://portfolioservice
           predicates:
-            - Path=/portfolio/**
+            - Path=/portfolio/api/**
             - Method=GET,POST,DELETE
+          filters:
+            - RemoveRequestHeader=Cookie
+        - id: swaggermarketdata
+          uri: lb://portfolioservice
+          predicates:
+            - Path=/swagger/portfolio/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+        - id: swaggerportfolio
+          uri: lb://marketdata
+          predicates:
+            - Path=/swagger/market-data/**
+            - Method=GET
           filters:
             - RemoveRequestHeader=Cookie
 
@@ -54,10 +73,10 @@ springdoc:
     path: /swagger-ui.html
     config-url: /v3/api-docs/swagger-config
     urls:
-      - url: /market-data/v3/api-docs
+      - url: /swagger/market-data/v3/api-docs
         name: Market Data Api
         primaryName: Market Data Api
-      - url: /portfolio/v3/api-docs
+      - url: /swagger/portfolio/v3/api-docs
         name: Portfolio Api
         primaryName: Portfolio Api
 

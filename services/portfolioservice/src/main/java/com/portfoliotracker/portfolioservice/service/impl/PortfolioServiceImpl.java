@@ -15,8 +15,7 @@ import com.portfoliotracker.portfolioservice.service.MarketDataService;
 import com.portfoliotracker.portfolioservice.service.PortfolioService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -48,28 +47,38 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public List<PortfolioTransactionResponse> getAllPortfolioTransactionsByUserId(String userId) {
-        List<PortfolioTransaction> portfolioTransactions = portfolioTransactionRepository.findByUserId(userId);
+    public Page<PortfolioTransactionResponse> getPortfolioTransactionsByUserId(String userId, int page, int size, Sort sort) {
 
-        if (portfolioTransactions.isEmpty()) {
-            throw new ResourceNotFoundException("Transactions", "userId", userId);
+
+        if (page < 0) {
+            List<PortfolioTransaction> allTransactions  = portfolioTransactionRepository.findByUserId(userId);
+
+            if (allTransactions.isEmpty()) {
+                throw new ResourceNotFoundException("Transactions", "userId", userId);
+            }
+
+            List<PortfolioTransactionResponse> responseList = allTransactions.stream()
+                    .map(portfolioTransactionMapper::toResponseDto)
+                    .collect(Collectors.toList());
+
+            return new PageImpl<>(responseList, Pageable.unpaged(), responseList.size());
+
         }
-        return portfolioTransactions.stream()
-                .map(portfolioTransactionMapper::toResponseDto)
-                .collect(Collectors.toList());
-    }
 
-    @Override
-    public List<PortfolioTransactionResponse> getPortfolioTransactionsByUserId(String userId, Pageable pageable) {
+        Pageable pageable = PageRequest.of(page, size, sort);
+
         Page<PortfolioTransaction> portfolioTransactions = portfolioTransactionRepository.findByUserId(userId, pageable);
 
         if (portfolioTransactions.isEmpty()) {
             throw new ResourceNotFoundException("Transactions", "userId", userId);
         }
 
-        return portfolioTransactions.stream()
+        List<PortfolioTransactionResponse> responseList = portfolioTransactions.stream()
                 .map(portfolioTransactionMapper::toResponseDto)
                 .collect(Collectors.toList());
+
+        return new PageImpl<>(responseList, pageable, portfolioTransactions.getTotalElements());
+
     }
 
     @Transactional

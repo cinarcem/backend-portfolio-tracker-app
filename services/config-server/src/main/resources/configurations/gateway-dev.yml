@@ -54,10 +54,10 @@ springdoc:
     path: /swagger-ui.html
     config-url: /v3/api-docs/swagger-config
     urls:
-      - url: /market-data/v3/api-docs
+      - url: /swagger/market-data/v3/api-docs
         name: Market Data Api
         primaryName: Market Data Api
-      - url: /portfolio/v3/api-docs
+      - url: /swagger/portfolio/v3/api-docs
         name: Portfolio Api
         primaryName: Portfolio Api
 

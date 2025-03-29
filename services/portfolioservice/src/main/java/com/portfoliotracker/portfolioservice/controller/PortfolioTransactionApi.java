@@ -5,14 +5,15 @@ import com.portfoliotracker.portfolioservice.common.ErrorDetails;
 import com.portfoliotracker.portfolioservice.dto.request.PortfolioTransactionRequest;
 import com.portfoliotracker.portfolioservice.dto.response.PortfolioTransactionResponse;
 import com.portfoliotracker.portfolioservice.service.PortfolioService;
+import com.portfoliotracker.portfolioservice.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +26,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/portfolio/v1")
+@RequestMapping("/portfolio/api/v1")
 public class PortfolioTransactionApi {
 
     private final PortfolioService portfolioService;
     private static final Logger logger = LogManager.getLogger(PortfolioTransactionApi.class);
 
-    @PostMapping("/users/{userId}/transactions")
+    @PostMapping("/transaction")
     @Operation(
             summary = "Add portfolio transaction for a user.",
             description = "This endpoint adds a portfolio transaction for a user"
@@ -39,13 +40,15 @@ public class PortfolioTransactionApi {
     public ResponseEntity<ApiCustomResponse<PortfolioTransactionResponse>> addPortfolioTransaction
             (
                     WebRequest webRequest,
-                    @PathVariable String userId,
                     @RequestBody PortfolioTransactionRequest portfolioTransactionRequest
             )
     {
 
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());
+
+        String token = webRequest.getHeader("Authorization");
+        String userId = JwtUtil.getJwtSub(token);
 
         PortfolioTransactionResponse savedPortfolioTransaction = portfolioService
                 .savePortfolioTransaction(userId, portfolioTransactionRequest);
@@ -67,7 +70,7 @@ public class PortfolioTransactionApi {
         return ResponseEntity.status(HttpStatus.CREATED).body(apiCustomResponse);
     }
 
-    @GetMapping("/users/{userId}/transactions")
+    @GetMapping("/transactions")
     @Operation(
             summary = "Returns a page of transactions list of added stocks by user id.",
             description = "This endpoint returns a page of transactions list of added stocks by user id."
@@ -76,9 +79,9 @@ public class PortfolioTransactionApi {
             @ApiResponse(responseCode  = "200", description  = "User transactions received successfully."),
             @ApiResponse(responseCode  = "204", description  = "No user transaction found.")
     })
-    public  ResponseEntity<ApiCustomResponse<List<PortfolioTransactionResponse>>>getPageableUserTransactions(
+    public  ResponseEntity<ApiCustomResponse<Page<PortfolioTransactionResponse>>>getPageableUserTransactions(
             WebRequest webRequest,
-            @PathVariable String userId,
+            @Parameter(description = "Set page -1 to receive all transactions.")
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -88,12 +91,14 @@ public class PortfolioTransactionApi {
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());
 
+        String token = webRequest.getHeader("Authorization");
+        String userId = JwtUtil.getJwtSub(token);
+
         Sort sort = descending ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        List<PortfolioTransactionResponse> userTransactions = portfolioService.getPortfolioTransactionsByUserId(userId, pageable);
+        Page<PortfolioTransactionResponse> userTransactions = portfolioService.getPortfolioTransactionsByUserId(userId, page, size, sort);
 
-        ApiCustomResponse<List<PortfolioTransactionResponse>> apiCustomResponse = ApiCustomResponse
-                .<List<PortfolioTransactionResponse>>builder()
+        ApiCustomResponse<Page<PortfolioTransactionResponse>> apiCustomResponse = ApiCustomResponse
+                .<Page<PortfolioTransactionResponse>>builder()
                 .timestamp(Instant.now())
                 .success(true)
                 .status(HttpStatus.OK.value())
@@ -105,42 +110,7 @@ public class PortfolioTransactionApi {
         return ResponseEntity.ok(apiCustomResponse);
     }
 
-    @GetMapping("/users/{userId}/all-transactions")
-    @Operation(
-            summary = "Returns all transactions list of added stocks by user id.",
-            description = "This endpoint returns transactions list of added stocks by user id."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode  = "200", description  = "User transactions received successfully."),
-            @ApiResponse(responseCode  = "204", description  = "No user transaction found.")
-    })
-    public ResponseEntity<ApiCustomResponse<List<PortfolioTransactionResponse>>> getUserTransactions(
-            WebRequest webRequest,
-            @PathVariable String userId
-    ){
-
-        String path = webRequest.getDescription(false).replace("uri=", "");
-        List<ErrorDetails> errors = new ArrayList<>(List.of());
-
-        List<PortfolioTransactionResponse> userTransactions = portfolioService
-                .getAllPortfolioTransactionsByUserId(userId);
-
-        ApiCustomResponse<List<PortfolioTransactionResponse>> apiCustomResponse = ApiCustomResponse
-                .<List<PortfolioTransactionResponse>>builder()
-                .timestamp(Instant.now())
-                .success(true)
-                .status(HttpStatus.OK.value())
-                .message("User transactions received successfully.")
-                .data(userTransactions)
-                .errors(errors)
-                .path(path)
-                .build();
-        logger.info(String.format("User transactions received successfully for user '%s'.", userId));
-
-        return ResponseEntity.ok(apiCustomResponse);
-    }
-
-    @DeleteMapping("/users/{userId}/transactions/{transactionId}")
+    @DeleteMapping("/transactions/{transactionId}")
     @Operation(
             summary = "Deletes a transaction by user id and transaction id.",
             description = "This endpoint deletes a transaction by user id and transaction id."
@@ -152,11 +122,13 @@ public class PortfolioTransactionApi {
     })
     public ResponseEntity<ApiCustomResponse<String>> deleteUserTransaction(
             WebRequest webRequest,
-            @PathVariable String userId,
             @PathVariable Long transactionId
     ){
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());
+
+        String token = webRequest.getHeader("Authorization");
+        String userId = JwtUtil.getJwtSub(token);
 
         portfolioService.deletePortfolioTransaction(userId, transactionId);
 
@@ -183,7 +155,7 @@ public class PortfolioTransactionApi {
 
     }
 
-    @DeleteMapping("/users/{userId}/stocks/{stockSymbol}/transactions")
+    @DeleteMapping("/stocks/{stockSymbol}/transactions")
     @Operation(
             summary = "Deletes all transactions for a stock symbol by user id.",
             description = "This endpoint deletes ll transactions for a stock symbol by user id."
@@ -195,11 +167,13 @@ public class PortfolioTransactionApi {
     })
     public ResponseEntity<ApiCustomResponse<String>> deleteAllTransactionsByUserIdAndStockSymbol(
             WebRequest webRequest,
-            @PathVariable String userId,
             @PathVariable String stockSymbol
     ){
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());
+
+        String token = webRequest.getHeader("Authorization");
+        String userId = JwtUtil.getJwtSub(token);
 
         portfolioService.deleteAllTransactionsByUserIdAndStockSymbol(userId,stockSymbol);
 
