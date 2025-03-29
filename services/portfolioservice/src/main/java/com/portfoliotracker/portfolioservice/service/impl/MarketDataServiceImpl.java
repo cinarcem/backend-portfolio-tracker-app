@@ -58,7 +58,7 @@ public class MarketDataServiceImpl implements MarketDataService {
 
         try {
 
-            String uri = UriComponentsBuilder.fromUriString("/market-data/v1/stocks")
+            String uri = UriComponentsBuilder.fromUriString("/market-data/api/v1/stocks")
                     .queryParam("symbols", symbols != null && !symbols.isEmpty() ? symbols.toArray(new String[0]) : null)
                     .build()
                     .toString();
