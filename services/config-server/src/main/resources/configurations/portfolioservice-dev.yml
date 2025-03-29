@@ -27,9 +27,9 @@ openapi:
 
 springdoc:
   api-docs:
-    path: /portfolio/v3/api-docs
+    path: /swagger/portfolio/v3/api-docs
   swagger-ui:
-    path: /portfolio/swagger-ui.html
+    path: /swagger/portfolio/swagger-ui.html
 
 eureka:
   client:
