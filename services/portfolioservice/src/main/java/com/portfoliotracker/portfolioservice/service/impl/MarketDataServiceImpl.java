@@ -36,7 +36,7 @@ public class MarketDataServiceImpl implements MarketDataService {
         try {
 
             ApiCustomResponse<List<String>> serviceResponse = webClient.get()
-                    .uri("/market-data/v1/stocks/symbols")
+                    .uri("/market-data/api/v1/stocks/symbols")
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<ApiCustomResponse<List<String>>>() {})
                     .block();
