@@ -26,6 +26,6 @@ public interface PortfolioTransactionRepository extends JpaRepository<PortfolioT
             "FROM PortfolioTransaction t " +
             "WHERE t.userId = :userId " +
             "GROUP BY t.stockSymbol")
-    List<PortfolioStock> getUserPortfolioStocks(String userId, Pageable pageable);
+    List<PortfolioStock> getUserPortfolioStocks(String userId);
 
 }

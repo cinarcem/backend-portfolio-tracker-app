@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -111,66 +112,113 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public List<PortfolioStockResponse> getUserPortfolioStocks(String userId, Pageable pageable) {
+    public Page<PortfolioStockResponse> getUserPortfolioStocks(String userId, int page, int size, Sort sort) {
 
-        List<PortfolioStockResponse> response = new ArrayList<>();
-        Map<String, StockMarketDataResponse> userStocksMarketData;
-
-        List<PortfolioStock> userPortfolioStocks =  portfolioTransactionRepository.getUserPortfolioStocks(userId, pageable);
+        List<PortfolioStock> userPortfolioStocks =  portfolioTransactionRepository.getUserPortfolioStocks(userId);
 
         if(userPortfolioStocks.isEmpty()){
             throw new ResourceNotFoundException("Stocks","userId",userId);
         }
 
-        Set<String> userStocksSymbols = userPortfolioStocks.stream()
-                .map(PortfolioStock::getStockSymbol)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        Map<String, PortfolioStock> mappedUserPortfolioStocks = userPortfolioStocks.stream()
+                .collect(Collectors.toMap(
+                        PortfolioStock::getStockSymbol,
+                        Function.identity(),
+                        (existing, replacement) -> existing));
 
-        userStocksMarketData = marketDataService.fetchStocksMarketData(new ArrayList<>(userStocksSymbols));
+        Map<String, StockMarketDataResponse> userStocksMarketData = marketDataService
+                .fetchStocksMarketData(new ArrayList<>(mappedUserPortfolioStocks.keySet()));
 
-        for ( String key : userStocksMarketData.keySet() ) {
+        List<PortfolioStockResponse> stocksWithMarketData = new ArrayList<>();
+        for (Map.Entry<String, StockMarketDataResponse> stringStockMarketDataResponseEntry : userStocksMarketData.entrySet()) {
+            String symbol = stringStockMarketDataResponseEntry.getKey();
+            StockMarketDataResponse marketData = stringStockMarketDataResponseEntry.getValue();
+            PortfolioStock portfolioStock = mappedUserPortfolioStocks.get(symbol);
 
-            BigDecimal averageCost = BigDecimal.valueOf(
-                    userPortfolioStocks
-                            .stream()
-                            .filter(s -> key.equals(s.getStockSymbol()))
-                            .mapToDouble(PortfolioStock::getQuantity)
-                            .findFirst()
-                            .orElseThrow(() -> new IllegalArgumentException("Average cost not found for stock: " + key))
-            );
+            if (portfolioStock == null) {
+                throw new IllegalArgumentException("Stock data not found for symbol: " + symbol);
+            }
 
-            BigDecimal quantity = userPortfolioStocks
-                    .stream()
-                    .filter( s -> key.equals(s.getStockSymbol()))
-                    .map(s -> BigDecimal.valueOf(s.getQuantity()))
-                    .findFirst()
-                    .orElse(BigDecimal.ZERO);
-
-            BigDecimal latestPrice = userStocksMarketData.get(key).getLatestPrice();
+            BigDecimal averageCost = BigDecimal.valueOf(portfolioStock.getAverageCost());
+            BigDecimal quantity = BigDecimal.valueOf(portfolioStock.getQuantity());
+            BigDecimal latestPrice = marketData.getLatestPrice();
 
             BigDecimal profitLossPct = latestPrice
-                    .divide(averageCost, RoundingMode.HALF_UP)
+                    .divide(averageCost, 4, RoundingMode.HALF_UP)
                     .subtract(BigDecimal.ONE)
                     .multiply(BigDecimal.valueOf(100))
                     .setScale(2, RoundingMode.HALF_UP);
 
             BigDecimal profitLossInTL = latestPrice.subtract(averageCost).multiply(quantity);
 
-            response.add(
-                    PortfolioStockResponse
-                            .builder()
-                            .stockSymbol(key)
-                            .latestPrice(userStocksMarketData.get(key).getLatestPrice())
-                            .dailyChangePct(userStocksMarketData.get(key).getDailyChangePct())
-                            .dailyChangeInTL(userStocksMarketData.get(key).getDailyChangeInTL())
-                            .averageCost(averageCost)
-                            .profitLossPct(profitLossPct)
-                            .profitLossInTL(profitLossInTL)
-                            .quantity(quantity)
-                            .build()
+            PortfolioStockResponse portfolioStockResponse = PortfolioStockResponse.builder()
+                    .stockSymbol(symbol)
+                    .latestPrice(latestPrice)
+                    .dailyChangePct(marketData.getDailyChangePct())
+                    .dailyChangeInTL(marketData.getDailyChangeInTL())
+                    .averageCost(averageCost)
+                    .profitLossPct(profitLossPct)
+                    .profitLossInTL(profitLossInTL)
+                    .quantity(quantity)
+                    .build();
+            stocksWithMarketData.add(portfolioStockResponse);
+        }
+
+        stocksWithMarketData = sortPortfolioStockResponses(stocksWithMarketData, sort);
+
+        if (page < 0) {
+            return new PageImpl<>(
+                    stocksWithMarketData,
+                    PageRequest.of(0, Math.max(stocksWithMarketData.size(), 1), sort),
+                    stocksWithMarketData.size()
             );
         }
 
-        return response;
+        PageRequest pageRequest = PageRequest.of(page, size, sort);
+
+        int totalElements = stocksWithMarketData.size();
+
+        int start = (int) pageRequest.getOffset();
+        int end = Math.min((start + pageRequest.getPageSize()), totalElements);
+
+        if (start > totalElements) {
+            return new PageImpl<>(new ArrayList<>(), pageRequest, totalElements);
+        }
+
+        List<PortfolioStockResponse> pageContent = stocksWithMarketData.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageRequest, totalElements);
+
+    }
+
+    private List<PortfolioStockResponse> sortPortfolioStockResponses(List<PortfolioStockResponse> list, Sort sort) {
+
+        if (sort.isUnsorted()) {
+            return list;
+        }
+
+        return list.stream().sorted((o1, o2) -> {
+            for (Sort.Order order : sort) {
+                Comparator<PortfolioStockResponse> comparator = getComparator(order);
+                int result = comparator.compare(o1, o2);
+                if (result != 0) {
+                    return order.isAscending() ? result : -result;
+                }
+            }
+            return 0;
+        }).collect(Collectors.toList());
+    }
+
+    private Comparator<PortfolioStockResponse> getComparator(Sort.Order order) {
+        return switch (order.getProperty()) {
+            case "stockSymbol" -> Comparator.comparing(PortfolioStockResponse::getStockSymbol);
+            case "latestPrice" -> Comparator.comparing(PortfolioStockResponse::getLatestPrice);
+            case "dailyChangePct" -> Comparator.comparing(PortfolioStockResponse::getDailyChangePct);
+            case "averageCost" -> Comparator.comparing(PortfolioStockResponse::getAverageCost);
+            case "profitLossPct" -> Comparator.comparing(PortfolioStockResponse::getProfitLossPct);
+            case "profitLossInTL" -> Comparator.comparing(PortfolioStockResponse::getProfitLossInTL);
+            case "quantity" -> Comparator.comparing(PortfolioStockResponse::getQuantity);
+            default -> throw new IllegalArgumentException("Unknown sort property: " + order.getProperty());
+        };
     }
 }

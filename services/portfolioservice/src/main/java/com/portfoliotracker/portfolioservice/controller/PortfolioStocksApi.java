@@ -3,17 +3,16 @@ package com.portfoliotracker.portfolioservice.controller;
 import com.portfoliotracker.portfolioservice.common.ApiCustomResponse;
 import com.portfoliotracker.portfolioservice.common.ErrorDetails;
 import com.portfoliotracker.portfolioservice.dto.response.PortfolioStockResponse;
-import com.portfoliotracker.portfolioservice.dto.response.PortfolioTransactionResponse;
 import com.portfoliotracker.portfolioservice.service.PortfolioService;
 import com.portfoliotracker.portfolioservice.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,8 +40,9 @@ public class PortfolioStocksApi {
             @ApiResponse(responseCode  = "200", description  = "Portfolio stocks received successfully."),
             @ApiResponse(responseCode  = "204", description  = "Stocks not found for userId.")
     })
-    public ResponseEntity<ApiCustomResponse<List<PortfolioStockResponse>>> getUserPortfolioStocks(
+    public ResponseEntity<ApiCustomResponse<Page<PortfolioStockResponse>>> getUserPortfolioStocks(
             WebRequest webRequest,
+            @Parameter(description = "Set page -1 to receive all transactions. Default value is 5")
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "stockSymbol") String sortBy,
@@ -55,11 +55,10 @@ public class PortfolioStocksApi {
         String userId = JwtUtil.getJwtSub(token);
 
         Sort sort = descending ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        List<PortfolioStockResponse> userPortfolioStocks = portfolioService.getUserPortfolioStocks(userId, pageable);
+        Page<PortfolioStockResponse> userPortfolioStocks = portfolioService.getUserPortfolioStocks(userId, page, size, sort);
 
-        ApiCustomResponse<List<PortfolioStockResponse>> apiCustomResponse = ApiCustomResponse
-                .<List<PortfolioStockResponse>>builder()
+        ApiCustomResponse<Page<PortfolioStockResponse>> apiCustomResponse = ApiCustomResponse
+                .<Page<PortfolioStockResponse>>builder()
                 .timestamp(Instant.now())
                 .success(true)
                 .status(HttpStatus.OK.value())

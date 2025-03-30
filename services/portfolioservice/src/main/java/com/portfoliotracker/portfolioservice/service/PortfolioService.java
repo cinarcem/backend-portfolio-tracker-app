@@ -16,5 +16,5 @@ public interface PortfolioService {
     void deletePortfolioTransaction(String userId, long transactionId);
     void deleteAllTransactionsByUserIdAndStockSymbol(String userId, String stockSymbol);
 
-    List<PortfolioStockResponse> getUserPortfolioStocks(String userId, Pageable pageable);
+    Page<PortfolioStockResponse> getUserPortfolioStocks(String userId, int page, int size, Sort sort);
 }
