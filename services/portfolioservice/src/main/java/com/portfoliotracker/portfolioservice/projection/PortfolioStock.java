@@ -1,4 +1,4 @@
-package com.portfoliotracker.portfolioservice.model;
+package com.portfoliotracker.portfolioservice.projection;
 
 import lombok.*;
 

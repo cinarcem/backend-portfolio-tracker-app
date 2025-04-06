@@ -1,4 +1,4 @@
-package com.portfoliotracker.marketdata.model;
+package com.portfoliotracker.watchlistservice.dto.response;
 
 import lombok.*;
 
@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 @ToString
-public class Stock {
+public class MarketDataServiceStockResponse {
 
     private String stockSymbol;
     private BigDecimal latestPrice;
@@ -18,4 +18,5 @@ public class Stock {
     private BigDecimal dailyChangeInTL;
     private BigDecimal tradingVolumeTL;
     private BigDecimal tradeVolumeCount;
+
 }

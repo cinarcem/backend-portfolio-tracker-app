@@ -8,8 +8,9 @@ import com.portfoliotracker.portfolioservice.entity.PortfolioTransaction;
 import com.portfoliotracker.portfolioservice.exception.InvalidSymbolsException;
 import com.portfoliotracker.portfolioservice.exception.ResourceNotFoundException;
 import com.portfoliotracker.portfolioservice.exception.ResourceNotDeletedException;
+import com.portfoliotracker.portfolioservice.exception.UnknownSortPropertyException;
 import com.portfoliotracker.portfolioservice.mapper.PortfolioTransactionMapper;
-import com.portfoliotracker.portfolioservice.model.PortfolioStock;
+import com.portfoliotracker.portfolioservice.projection.PortfolioStock;
 import com.portfoliotracker.portfolioservice.repository.PortfolioTransactionRepository;
 import com.portfoliotracker.portfolioservice.service.MarketDataService;
 import com.portfoliotracker.portfolioservice.service.PortfolioService;
@@ -151,7 +152,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
             BigDecimal profitLossInTL = latestPrice.subtract(averageCost).multiply(quantity);
 
-            PortfolioStockResponse portfolioStockResponse = PortfolioStockResponse.builder()
+            PortfolioStockResponse portfolioStockResponseDto = PortfolioStockResponse.builder()
                     .stockSymbol(symbol)
                     .latestPrice(latestPrice)
                     .dailyChangePct(marketData.getDailyChangePct())
@@ -161,7 +162,7 @@ public class PortfolioServiceImpl implements PortfolioService {
                     .profitLossInTL(profitLossInTL)
                     .quantity(quantity)
                     .build();
-            stocksWithMarketData.add(portfolioStockResponse);
+            stocksWithMarketData.add(portfolioStockResponseDto);
         }
 
         stocksWithMarketData = sortPortfolioStockResponses(stocksWithMarketData, sort);
@@ -218,7 +219,7 @@ public class PortfolioServiceImpl implements PortfolioService {
             case "profitLossPct" -> Comparator.comparing(PortfolioStockResponse::getProfitLossPct);
             case "profitLossInTL" -> Comparator.comparing(PortfolioStockResponse::getProfitLossInTL);
             case "quantity" -> Comparator.comparing(PortfolioStockResponse::getQuantity);
-            default -> throw new IllegalArgumentException("Unknown sort property: " + order.getProperty());
+            default -> throw new UnknownSortPropertyException( order.getProperty());
         };
     }
 }

@@ -1,6 +1,5 @@
 package com.portfoliotracker.portfolioservice.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfoliotracker.portfolioservice.common.ApiCustomResponse;
 import com.portfoliotracker.portfolioservice.dto.response.StockMarketDataResponse;
 import com.portfoliotracker.portfolioservice.service.MarketDataService;
@@ -53,7 +52,7 @@ public class MarketDataServiceImpl implements MarketDataService {
 
     @Override
     public Map<String, StockMarketDataResponse> fetchStocksMarketData(List<String> symbols) {
-        ObjectMapper objectMapper = new ObjectMapper();
+
         Map<String, StockMarketDataResponse> response = new LinkedHashMap<>();
 
         try {

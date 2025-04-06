@@ -2,10 +2,12 @@ package com.portfoliotracker.marketdata.controller;
 
 import com.portfoliotracker.marketdata.common.ApiCustomResponse;
 import com.portfoliotracker.marketdata.common.ErrorDetails;
-import com.portfoliotracker.marketdata.model.Index;
+import com.portfoliotracker.marketdata.dto.IndexResponse;
 import com.portfoliotracker.marketdata.service.IndexService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +39,12 @@ public class IndexApi {
                     "and the value is the corresponding name."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode  = "200", description  = "Index symbols successfully received."),
-            @ApiResponse(responseCode  = "500", description  = "No market data found.")
+            @ApiResponse(responseCode  = "200", description  = "Index symbols successfully received.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "500", description  = "No market data found.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
     })
     public ResponseEntity<ApiCustomResponse< Map<String, String>>> getAllIndexSymbols(WebRequest webRequest){
 
@@ -70,11 +76,17 @@ public class IndexApi {
                     "symbols."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode  = "200", description  = "Index symbols successfully received."),
-            @ApiResponse(responseCode  = "206", description  = "Partial data received."),
-            @ApiResponse(responseCode  = "500", description  = "No market data found.")
+            @ApiResponse(responseCode  = "200", description  = "Index symbols successfully received.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "206", description  = "Partial data received.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "500", description  = "No market data found.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
     })
-    public ResponseEntity<ApiCustomResponse<List<Index>>> getIndexesMarketData(
+    public ResponseEntity<ApiCustomResponse<List<IndexResponse>>> getIndexesMarketData(
             WebRequest webRequest,
             @Parameter(description = "A list of index symbols to fetch market data.")
             @RequestParam List<String> symbols) {
@@ -82,8 +94,8 @@ public class IndexApi {
         String responseMessage;
         List<ErrorDetails> errors = new ArrayList<>(List.of());
 
-        Map<String, Index> serviceResponse = indexService.getIndexesMarketData(symbols);
-        List<Index> indexesMarketData = new ArrayList<>(serviceResponse.values());
+        Map<String, IndexResponse> serviceResponse = indexService.getIndexesMarketData(symbols);
+        List<IndexResponse> indexesMarketData = new ArrayList<>(serviceResponse.values());
 
         int differenceCount = symbols.size() - indexesMarketData.size();
         boolean isAllSymbolsReceived = differenceCount == 0;
@@ -106,7 +118,7 @@ public class IndexApi {
             errors.add(errorDetails);
         }
 
-        ApiCustomResponse<List<Index>> apiCustomResponse = ApiCustomResponse.<List<Index>>builder()
+        ApiCustomResponse<List<IndexResponse>> apiCustomResponse = ApiCustomResponse.<List<IndexResponse>>builder()
                 .timestamp(Instant.now())
                 .success(true)
                 .status( isAllSymbolsReceived ? HttpStatus.OK.value() : HttpStatus.PARTIAL_CONTENT.value())

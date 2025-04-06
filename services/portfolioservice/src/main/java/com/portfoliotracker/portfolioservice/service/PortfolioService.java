@@ -4,10 +4,7 @@ import com.portfoliotracker.portfolioservice.dto.request.PortfolioTransactionReq
 import com.portfoliotracker.portfolioservice.dto.response.PortfolioStockResponse;
 import com.portfoliotracker.portfolioservice.dto.response.PortfolioTransactionResponse;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import java.util.List;
 
 public interface PortfolioService {
 

@@ -2,8 +2,7 @@ package com.portfoliotracker.marketdata.service.impl;
 
 import com.portfoliotracker.marketdata.exception.InvalidSymbolsException;
 import com.portfoliotracker.marketdata.exception.NoMarketDataFoundException;
-import com.portfoliotracker.marketdata.model.Index;
-import com.portfoliotracker.marketdata.model.Stock;
+import com.portfoliotracker.marketdata.dto.IndexResponse;
 import com.portfoliotracker.marketdata.service.IndexService;
 import jakarta.annotation.PostConstruct;
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +32,7 @@ public class IndexServiceImpl implements IndexService {
     @Value("${INDEX_DATA_URL}")
     private String indexDataUrl;
 
-    private Map<String, Index> indexesMarketData = new ConcurrentHashMap<>();
+    private Map<String, IndexResponse> indexesMarketData = new ConcurrentHashMap<>();
 
     private static final Logger logger = LogManager.getLogger(IndexServiceImpl.class);
 
@@ -55,8 +54,8 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public Map<String, Index> getIndexesMarketData(List<String> symbols) {
-        Map<String, Index>  response = new HashMap<>();
+    public Map<String, IndexResponse> getIndexesMarketData(List<String> symbols) {
+        Map<String, IndexResponse>  response = new HashMap<>();
 
         if(indexesMarketData.keySet().isEmpty()){
             throw new NoMarketDataFoundException();
@@ -100,7 +99,7 @@ public class IndexServiceImpl implements IndexService {
 
     private void  updateIndexesMarketData(){
 
-        Map<String, Index> updatedIndexesMarketData = new HashMap<>();
+        Map<String, IndexResponse> updatedIndexesMarketData = new HashMap<>();
 
         if (document == null){
             logger.error("Document is null. Failed to update indexesMarketData. " +
@@ -126,7 +125,7 @@ public class IndexServiceImpl implements IndexService {
                 BigDecimal  monthlyChangePct = parseBigDecimal(row.select("td").get(4).text());
                 BigDecimal  yearlyChangePct = parseBigDecimal(row.select("td").get(5).text());
 
-                Index index = Index.builder()
+                IndexResponse index = IndexResponse.builder()
                         .symbol(symbol)
                         .name(name)
                         .latestValue(latestValue)

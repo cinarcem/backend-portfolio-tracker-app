@@ -2,15 +2,19 @@ package com.portfoliotracker.marketdata.controller;
 
 import com.portfoliotracker.marketdata.common.ApiCustomResponse;
 import com.portfoliotracker.marketdata.common.ErrorDetails;
-import com.portfoliotracker.marketdata.model.Stock;
+import com.portfoliotracker.marketdata.dto.StockResponse;
 import com.portfoliotracker.marketdata.service.StockService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +28,7 @@ import java.util.Map;
 
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/market-data/api/v1")
 public class StockApi {
@@ -38,8 +43,12 @@ public class StockApi {
                     "and the value is the corresponding name."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode  = "200", description  = "Market data successfully received for given symbols."),
-            @ApiResponse(responseCode  = "500", description  = "No market data found.")
+            @ApiResponse(responseCode  = "200", description  = "Market data successfully received for given symbols.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "500", description  = "No market data found.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
     })
     public ResponseEntity<ApiCustomResponse<List<String>>> getAllStockSymbols(WebRequest webRequest){
 
@@ -69,20 +78,26 @@ public class StockApi {
                     "symbols."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode  = "200", description  = "Market data successfully received for given symbols."),
-            @ApiResponse(responseCode  = "206", description  = "Partial data received."),
-            @ApiResponse(responseCode  = "400", description  = "Symbols are not valid.")
+            @ApiResponse(responseCode  = "200", description  = "Market data successfully received for given symbols.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "206", description  = "Partial data received.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "400", description  = "Symbols are not valid.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
     })
-    public ResponseEntity<ApiCustomResponse<List<Stock>>> getStocksMarketData(
+    public ResponseEntity<ApiCustomResponse<List<StockResponse>>> getStocksMarketData(
             WebRequest webRequest,
             @Parameter(description = "A list of stock symbols to fetch market data.")
-            @RequestParam List<String> symbols) {
+            @RequestParam @NotEmpty(message = "Symbols list cannot be empty") List<String> symbols) {
 
         String path = webRequest.getDescription(false).replace("uri=", "");
         String responseMessage;
         List<ErrorDetails> errors = new ArrayList<>(List.of());
-        Map<String, Stock> serviceResponse = stockService.getStocksMarketData(symbols);
-        List<Stock> stocksMarketData = new ArrayList<>(serviceResponse.values());
+        Map<String, StockResponse> serviceResponse = stockService.getStocksMarketData(symbols);
+        List<StockResponse> stocksMarketData = new ArrayList<>(serviceResponse.values());
 
         int differenceCount = symbols.size() - stocksMarketData.size();
         boolean isAllSymbolsReceived = differenceCount == 0;
@@ -103,7 +118,7 @@ public class StockApi {
             errors.add(errorDetails);
         }
 
-        ApiCustomResponse<List<Stock>> apiCustomResponse = ApiCustomResponse.<List<Stock>>builder()
+        ApiCustomResponse<List<StockResponse>> apiCustomResponse = ApiCustomResponse.<List<StockResponse>>builder()
                 .timestamp(Instant.now())
                 .success(true)
                 .status(isAllSymbolsReceived ? HttpStatus.OK.value() : HttpStatus.PARTIAL_CONTENT.value())

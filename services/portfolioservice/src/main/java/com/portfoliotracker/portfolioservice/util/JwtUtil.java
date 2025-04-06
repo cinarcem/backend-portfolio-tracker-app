@@ -6,12 +6,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Base64;
 import java.util.Map;
 
+/**
+ * Utility class for decoding and extracting claims from JWT
+ */
 public class JwtUtil {
 
     public static String getJwtSub(String token){
         return getAllJwtClaims(token).get("sub").toString();
     }
 
+    /**
+     * Decodes the JWT payload and extracts all claims as a Map.
+     *
+     * @param token the JWT string
+     * @return a Map containing all claims from the JWT payload
+     * @throws RuntimeException if decoding or parsing fails
+     */
     public static Map<String, Object> getAllJwtClaims(String token) {
         try {
             String[] parts = token.split("\\.");

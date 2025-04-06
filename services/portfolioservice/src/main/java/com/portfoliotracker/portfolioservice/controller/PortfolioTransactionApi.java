@@ -4,10 +4,13 @@ import com.portfoliotracker.portfolioservice.common.ApiCustomResponse;
 import com.portfoliotracker.portfolioservice.common.ErrorDetails;
 import com.portfoliotracker.portfolioservice.dto.request.PortfolioTransactionRequest;
 import com.portfoliotracker.portfolioservice.dto.response.PortfolioTransactionResponse;
+import com.portfoliotracker.portfolioservice.exception.UserNotFoundException;
 import com.portfoliotracker.portfolioservice.service.PortfolioService;
 import com.portfoliotracker.portfolioservice.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
@@ -24,6 +28,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/portfolio/api/v1")
@@ -37,6 +42,11 @@ public class PortfolioTransactionApi {
             summary = "Add portfolio transaction for a user.",
             description = "This endpoint adds a portfolio transaction for a user"
     )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode  = "200", description  = "User transactions received successfully.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
+    })
     public ResponseEntity<ApiCustomResponse<PortfolioTransactionResponse>> addPortfolioTransaction
             (
                     WebRequest webRequest,
@@ -46,9 +56,14 @@ public class PortfolioTransactionApi {
 
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());
+        String userId;
 
-        String token = webRequest.getHeader("Authorization");
-        String userId = JwtUtil.getJwtSub(token);
+        try {
+            String token = webRequest.getHeader("Authorization");
+            userId = JwtUtil.getJwtSub(token);
+        }catch (Exception UserNotFoundException){
+            throw new UserNotFoundException();
+        }
 
         PortfolioTransactionResponse savedPortfolioTransaction = portfolioService
                 .savePortfolioTransaction(userId, portfolioTransactionRequest);
@@ -76,10 +91,14 @@ public class PortfolioTransactionApi {
             description = "This endpoint returns a page of transactions list of added stocks by user id."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode  = "200", description  = "User transactions received successfully."),
-            @ApiResponse(responseCode  = "204", description  = "No user transaction found.")
+            @ApiResponse(responseCode  = "200", description  = "User transactions received successfully.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "204", description  = "No user transaction found.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
     })
-    public  ResponseEntity<ApiCustomResponse<Page<PortfolioTransactionResponse>>>getPageableUserTransactions(
+    public  ResponseEntity<ApiCustomResponse<Page<PortfolioTransactionResponse>>>getUserTransactions(
             WebRequest webRequest,
             @Parameter(description = "Set page -1 to receive all transactions.")
             @RequestParam(defaultValue = "0") int page,
@@ -90,9 +109,14 @@ public class PortfolioTransactionApi {
 
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());
+        String userId;
 
-        String token = webRequest.getHeader("Authorization");
-        String userId = JwtUtil.getJwtSub(token);
+        try {
+            String token = webRequest.getHeader("Authorization");
+            userId = JwtUtil.getJwtSub(token);
+        }catch (Exception UserNotFoundException){
+            throw new UserNotFoundException();
+        }
 
         Sort sort = descending ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Page<PortfolioTransactionResponse> userTransactions = portfolioService.getPortfolioTransactionsByUserId(userId, page, size, sort);
@@ -116,9 +140,15 @@ public class PortfolioTransactionApi {
             description = "This endpoint deletes a transaction by user id and transaction id."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode  = "204 ", description  = "Transaction with transaction id for user id is deleted successfully."),
-            @ApiResponse(responseCode  = "404 ", description  = "Transaction not found for userId/transactionId."),
-            @ApiResponse(responseCode  = "500", description  = "Transaction not deleted with userId/transactionId.'")
+            @ApiResponse(responseCode  = "204 ", description  = "Transaction with transaction id for user id is deleted successfully.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "404 ", description  = "Transaction not found for userId/transactionId.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "500", description  = "Transaction not deleted with userId/transactionId.'",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
     })
     public ResponseEntity<ApiCustomResponse<String>> deleteUserTransaction(
             WebRequest webRequest,
@@ -126,9 +156,14 @@ public class PortfolioTransactionApi {
     ){
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());
+        String userId;
 
-        String token = webRequest.getHeader("Authorization");
-        String userId = JwtUtil.getJwtSub(token);
+        try {
+            String token = webRequest.getHeader("Authorization");
+            userId = JwtUtil.getJwtSub(token);
+        }catch (Exception UserNotFoundException){
+            throw new UserNotFoundException();
+        }
 
         portfolioService.deletePortfolioTransaction(userId, transactionId);
 
@@ -161,19 +196,30 @@ public class PortfolioTransactionApi {
             description = "This endpoint deletes ll transactions for a stock symbol by user id."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode  = "204 ", description  = "Transaction with stock symbol for userId is deleted successfully."),
-            @ApiResponse(responseCode  = "404 ", description  = "Transaction not found for userId/transactionId."),
-            @ApiResponse(responseCode  = "500", description  = "Transaction not deleted with userId/transactionId.'")
+            @ApiResponse(responseCode  = "204 ", description  = "Transaction with stock symbol for userId is deleted successfully.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "404 ", description  = "Transaction not found for userId/transactionId.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "500", description  = "Transaction not deleted with userId/transactionId.'",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
     })
-    public ResponseEntity<ApiCustomResponse<String>> deleteAllTransactionsByUserIdAndStockSymbol(
+    public ResponseEntity<ApiCustomResponse<String>> deleteAllTransactionsByStockSymbol(
             WebRequest webRequest,
             @PathVariable String stockSymbol
     ){
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());
+        String userId;
 
-        String token = webRequest.getHeader("Authorization");
-        String userId = JwtUtil.getJwtSub(token);
+        try {
+            String token = webRequest.getHeader("Authorization");
+            userId = JwtUtil.getJwtSub(token);
+        }catch (Exception UserNotFoundException){
+            throw new UserNotFoundException();
+        }
 
         portfolioService.deleteAllTransactionsByUserIdAndStockSymbol(userId,stockSymbol);
 

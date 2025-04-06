@@ -2,7 +2,7 @@ package com.portfoliotracker.marketdata.service.impl;
 
 import com.portfoliotracker.marketdata.exception.InvalidSymbolsException;
 import com.portfoliotracker.marketdata.exception.NoMarketDataFoundException;
-import com.portfoliotracker.marketdata.model.Stock;
+import com.portfoliotracker.marketdata.dto.StockResponse;
 import com.portfoliotracker.marketdata.service.StockService;
 import jakarta.annotation.PostConstruct;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +32,7 @@ public class StockServiceImpl implements StockService {
     @Value(("${STOCK_DATA_URL}"))
     private String stockDataUrl;
 
-    private Map<String, Stock> stocksMarketData = new ConcurrentHashMap<>();
+    private Map<String, StockResponse> stocksMarketData = new ConcurrentHashMap<>();
 
     private static final Logger logger = LogManager.getLogger(StockServiceImpl.class);
 
@@ -45,8 +45,8 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public Map<String, Stock>  getStocksMarketData(List<String> stockSymbols) {
-        Map<String, Stock>  response = new LinkedHashMap<>();
+    public Map<String, StockResponse>  getStocksMarketData(List<String> stockSymbols) {
+        Map<String, StockResponse>  response = new LinkedHashMap<>();
 
         if(stocksMarketData.keySet().isEmpty()){
             throw new NoMarketDataFoundException();
@@ -89,7 +89,7 @@ public class StockServiceImpl implements StockService {
     }
 
     private void  updateStocksMarketData(){
-        Map<String, Stock> updatedStocksMarketData = new HashMap<>();
+        Map<String, StockResponse> updatedStocksMarketData = new HashMap<>();
 
         if (document == null){
             logger.error("Document is null. Failed to update stocksMarketData. " +
@@ -113,7 +113,7 @@ public class StockServiceImpl implements StockService {
                 BigDecimal dailyChangeInTL = parseBigDecimal(row.select("td.text-right").get(2).text());
                 BigDecimal tradingVolumeTL = parseBigDecimal(row.select("td.text-right").get(3).text());
                 BigDecimal tradeVolumeCount = parseBigDecimal(row.select("td.text-right").get(4).text());
-                Stock stock = Stock.builder()
+                StockResponse stock = StockResponse.builder()
                         .stockSymbol(stockCode)
                         .latestPrice(latestPrice)
                         .dailyChangePct(dailyChangePct)

@@ -49,6 +49,13 @@ spring:
             - Method=GET,POST,DELETE
           filters:
             - RemoveRequestHeader=Cookie
+        - id: watchlistapi
+          uri: lb://watchlistservice
+          predicates:
+            - Path=/watchlist/api/**
+            - Method=GET,POST,DELETE
+          filters:
+            - RemoveRequestHeader=Cookie
         - id: swaggermarketdata
           uri: lb://portfolioservice
           predicates:
@@ -60,6 +67,13 @@ spring:
           uri: lb://marketdata
           predicates:
             - Path=/swagger/market-data/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+        - id: swaggerwatchlist
+          uri: lb://watchlistservice
+          predicates:
+            - Path=/swagger/watchlist/**
             - Method=GET
           filters:
             - RemoveRequestHeader=Cookie
@@ -79,6 +93,9 @@ springdoc:
       - url: /swagger/portfolio/v3/api-docs
         name: Portfolio Api
         primaryName: Portfolio Api
+      - url: /swagger/watchlist/v3/api-docs
+        name: Watchlist Api
+        primaryName: Watchlist Api
 
 logging:
   level:

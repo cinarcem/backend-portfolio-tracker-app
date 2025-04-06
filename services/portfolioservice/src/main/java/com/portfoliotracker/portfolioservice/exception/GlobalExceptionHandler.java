@@ -72,6 +72,34 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiCustomResponse);
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiCustomResponse<String>> handleInvalidSymbolsException(
+            UserNotFoundException exception, WebRequest webRequest){
+
+        String path = webRequest.getDescription(false).replace("uri=", "");
+        List<ErrorDetails> errors = new ArrayList<>(List.of());
+
+        ErrorDetails errorDetails = ErrorDetails.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(exception.getMessage())
+                .path(path)
+                .build();
+
+        errors.add(errorDetails);
+
+        ApiCustomResponse<String> apiCustomResponse = ApiCustomResponse.<String>builder()
+                .timestamp(Instant.now())
+                .success(false)
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(exception.getMessage())
+                .data(null)
+                .errors(errors)
+                .path(path)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiCustomResponse);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiCustomResponse<String>> handleNoContentFoundException(
             ResourceNotFoundException exception, WebRequest webRequest){
@@ -126,5 +154,33 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiCustomResponse);
+    }
+
+    @ExceptionHandler(UnknownSortPropertyException.class)
+    public ResponseEntity<ApiCustomResponse<String>> handleUnknownSortProperyException(
+            UnknownSortPropertyException exception, WebRequest webRequest){
+
+        String path = webRequest.getDescription(false).replace("uri=", "");
+        List<ErrorDetails> errors = new ArrayList<>(List.of());
+
+        ErrorDetails errorDetails = ErrorDetails.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(exception.getMessage())
+                .path(path)
+                .build();
+
+        errors.add(errorDetails);
+
+        ApiCustomResponse<String> apiCustomResponse = ApiCustomResponse.<String>builder()
+                .timestamp(Instant.now())
+                .success(false)
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(exception.getMessage())
+                .data(null)
+                .errors(errors)
+                .path(path)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiCustomResponse);
     }
 }
