@@ -21,7 +21,7 @@ public class SecurityConfig {
                 .authorizeExchange( exchange -> exchange
                         .pathMatchers(HttpMethod.OPTIONS, "/**")
                         .permitAll()
-                        .pathMatchers("/portfolio/api/**","/market-data/api/**","/watchlist/api/v1")
+                        .pathMatchers("/portfolio/api/**","/market-data/api/**","/watchlist/api/**")
                         .authenticated()
                         .anyExchange()
                         .permitAll()
