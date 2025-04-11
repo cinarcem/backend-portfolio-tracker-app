@@ -2,7 +2,6 @@ package com.portfoliotracker.watchlistservice.service.impl;
 
 import com.portfoliotracker.watchlistservice.dto.response.StockResultResponse;
 import com.portfoliotracker.watchlistservice.dto.response.StockWithMarketDataResponse;
-import com.portfoliotracker.watchlistservice.entity.IndexesWatchlist;
 import com.portfoliotracker.watchlistservice.entity.StocksWatchlist;
 import com.portfoliotracker.watchlistservice.exception.ResourceNotFoundException;
 import com.portfoliotracker.watchlistservice.repository.StocksWatchlistRepository;
@@ -68,6 +67,24 @@ public class StocksWatchlistServiceImpl implements StocksWatchlistService {
     }
 
     /**
+     * Deletes a list of stock symbols from user's watchlist.
+     *
+     * @param userId  the unique identifier of the user
+     * @param stockSymbols the list of stock symbols to be deleted
+     * @return a list of deleted stock symbols
+     */
+    @Override
+    public List<StockResultResponse> deleteStocksFromWatchlist(String userId, List<String> stockSymbols) {
+        List<StockResultResponse> deletedStocksFromWatchlist = new ArrayList<>();
+
+        for (String symbol : stockSymbols) {
+            deletedStocksFromWatchlist.add(this.stockSymbolDeletingProcess(userId, symbol));
+        }
+
+        return deletedStocksFromWatchlist;
+    }
+
+    /**
      * Internal helper method to process a single stock symbol for watchlist addition.
      * Validates the symbol and prevents duplicates.
      *
@@ -106,4 +123,38 @@ public class StocksWatchlistServiceImpl implements StocksWatchlistService {
                 .error(error)
                 .build();
     }
+
+    /**
+     * Handles the logic for deleting a single stock symbol from the watchlist.
+     *
+     * @param userId the user to whom the stock will be deleted from watchlist
+     * @param stockSymbol the stock symbol to be deleted
+     * @return the result of the operation for this stock symbol
+     */
+    private StockResultResponse stockSymbolDeletingProcess(String userId, String stockSymbol) {
+
+        String status = "success";
+        String error = null;
+
+        Set<String> existingStocks = new HashSet<>(stocksWatchlistRepository.findStockSymbolsByUserId(userId));
+
+        if(existingStocks.contains(stockSymbol)){
+            try {
+                stocksWatchlistRepository.deleteByUserIdAndStockSymbol(userId, stockSymbol);
+            }catch (Exception e){
+                status = "failed";
+                error = e.getMessage();
+            }
+        } else {
+            status = "success";
+            error = "Already not existing in the watchlist.";
+        }
+
+        return StockResultResponse.builder()
+                .stockSymbol(stockSymbol)
+                .status(status)
+                .error(error)
+                .build();
+    }
+
 }

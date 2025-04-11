@@ -7,6 +7,7 @@ import com.portfoliotracker.watchlistservice.exception.ResourceNotFoundException
 import com.portfoliotracker.watchlistservice.repository.IndexesWatchlistRepository;
 import com.portfoliotracker.watchlistservice.service.IndexesWatchlistService;
 import com.portfoliotracker.watchlistservice.service.MarketDataService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -76,6 +77,27 @@ public class IndexesWatchlistServiceImpl implements IndexesWatchlistService {
     }
 
     /**
+     * Deletes a list of index symbols from user's watchlist.
+     *
+     * @param userId  the unique identifier of the user
+     * @param symbols the list of index symbols to be deleted
+     * @return a list of deleted indexes
+     */
+    @Transactional
+    @Override
+    public List<IndexResultResponse> deleteIndexesFromWatchlist(String userId, List<String> symbols) {
+
+        List<IndexResultResponse> deletedIndexesFromWatchlist = new ArrayList<>();
+
+        for (String symbol : symbols) {
+            deletedIndexesFromWatchlist.add(this.indexSymbolDeletingProcess(userId, symbol));
+        }
+
+        return deletedIndexesFromWatchlist;
+
+    }
+
+    /**
      * Handles the logic for adding a single index symbol to the watchlist.
      *
      * Validates the symbol against the known list, checks for duplicates,
@@ -116,4 +138,38 @@ public class IndexesWatchlistServiceImpl implements IndexesWatchlistService {
                 .error(error)
                 .build();
     }
+
+    /**
+     * Handles the logic for deleting a single index symbol from the watchlist.
+          *
+     * @param userId the user to whom the index will be deleted from watchlist
+     * @param symbol the index symbol to be deleted
+     * @return the result of the operation for this index symbol
+     */
+    private IndexResultResponse indexSymbolDeletingProcess(String userId, String symbol) {
+
+        String status = "success";
+        String error = null;
+
+        Set<String> existingIndexes = new HashSet<>(indexesWatchlistRepository.findIndexSymbolsByUserId(userId));
+
+        if(existingIndexes.contains(symbol)){
+            try {
+                indexesWatchlistRepository.deleteByUserIdAndIndexSymbol(userId, symbol);
+            }catch (Exception e){
+                status = "failed";
+                error = e.getMessage();
+            }
+        } else {
+            status = "success";
+            error = "Already not existing in the watchlist.";
+        }
+
+        return IndexResultResponse.builder()
+                .indexSymbol(symbol)
+                .status(status)
+                .error(error)
+                .build();
+    }
+
 }

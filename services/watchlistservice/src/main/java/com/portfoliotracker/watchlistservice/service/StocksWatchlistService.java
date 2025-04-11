@@ -12,4 +12,6 @@ public interface StocksWatchlistService {
     List<StockResultResponse> addStockToWatchlist(String userId, List<String>stockSymbols);
     Page<StockWithMarketDataResponse> getStockWatchlists(String userId, int page, int size, Sort sort);
 
+    List<StockResultResponse> deleteStocksFromWatchlist(String userId, List<String> stockSymbols);
+
 }

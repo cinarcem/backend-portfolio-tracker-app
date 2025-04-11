@@ -29,6 +29,13 @@ public class MarketDataServiceImpl implements MarketDataService {
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
+    /**
+     * Validates if a given stock symbol is available in the market data service.
+     *
+     * @param symbol the stock symbol to validate.
+     * @return {@code true} if the symbol exists in the market data; {@code false} otherwise.
+     * @throws RuntimeException if an unexpected error occurs while validating the stock symbol.
+     */
     @Override
     public boolean isValidStockSymbol(String symbol) {
 
@@ -50,6 +57,14 @@ public class MarketDataServiceImpl implements MarketDataService {
 
     }
 
+    /**
+     * Fetches market data for a list of stock symbols from the market data service.
+     *
+     * @param symbols a list of stock symbols for which market data is to be retrieved.
+     * @return a map where the key is the stock symbol and the value is the corresponding market data response.
+     * @throws RuntimeException if an error occurs while fetching stock market data,
+     *                          including HTTP errors or unexpected exceptions.
+     */
     @Override
     public Map<String, StockMarketDataResponse> fetchStocksMarketData(List<String> symbols) {
 

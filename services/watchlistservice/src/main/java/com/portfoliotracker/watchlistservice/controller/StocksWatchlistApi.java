@@ -167,4 +167,79 @@ public class StocksWatchlistApi {
 
     }
 
+    @DeleteMapping("/stocks")
+    @Operation(
+            summary = "Deletes stock symbols from watchlist for user.",
+            description = "This endpoint deletes stock symbols from watchlist for user."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode  = "200", description  = "Stock symbols deleted from watchlist received successfully.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "207", description  = "Stock symbols deleted partially.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "400", description  = "No stock symbol deleted from watchlist!",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
+    })
+    public ResponseEntity<ApiCustomResponse<List<StockResultResponse>>> deleteStocksFromWatchlist(
+            WebRequest webRequest,
+            @Parameter(description = "Deletes a list of stock symbols from watchlist.")
+            @RequestParam @NotEmpty(message = "Symbols list cannot be empty") List<String> symbols
+    ){
+
+        String path = webRequest.getDescription(false).replace("uri=", "");
+        List<ErrorDetails> errors = new ArrayList<>(List.of());
+
+        String userId;
+
+        try {
+            String token = webRequest.getHeader("Authorization");
+            userId = JwtUtil.getJwtSub(token);
+        }catch (Exception UserNotFoundException){
+            throw new UserNotFoundException();
+        }
+
+        List<StockResultResponse> deletedSymbols = stocksWatchlistService.deleteStocksFromWatchlist(userId, symbols);
+
+        long failedCount = deletedSymbols.stream()
+                .filter(item -> "failed".equals(item.getStatus()))
+                .count();
+
+        long successCount = deletedSymbols.stream()
+                .filter(item -> "success".equals(item.getStatus()))
+                .count();
+
+        HttpStatus httpStatus;
+        String message;
+
+        if( failedCount == 0){
+            httpStatus = HttpStatus.OK;
+            message = "Stocks symbols successfully deleted from watchlist.";
+        } else if ( successCount>0){
+            httpStatus = HttpStatus.MULTI_STATUS;
+            message = "Stocks symbols deleted partially.";
+        } else {
+            httpStatus = HttpStatus.BAD_REQUEST;
+            message = "No stocks symbol deleted!";
+        }
+
+        ApiCustomResponse<List<StockResultResponse> > apiCustomResponse = ApiCustomResponse
+                .<List<StockResultResponse> >builder()
+                .timestamp(Instant.now())
+                .success(true)
+                .status(httpStatus.value())
+                .message(message)
+                .data(deletedSymbols)
+                .errors(errors)
+                .path(path)
+                .build();
+
+        logger.info(String.format("Stocks symbols deleted from watchlist for userId %s.", userId)
+        );
+
+        return ResponseEntity.status(httpStatus).body(apiCustomResponse);
+    }
+
 }

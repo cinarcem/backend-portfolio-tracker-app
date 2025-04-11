@@ -33,6 +33,14 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final MarketDataService marketDataService;
     private final PortfolioTransactionMapper portfolioTransactionMapper;
 
+    /**
+     * Saves a portfolio transaction for a specific user.
+     *
+     * @param userId                      the ID of the user performing the transaction.
+     * @param portfolioTransactionRequest the transaction details including stock symbol, quantity, etc.
+     * @return a response DTO containing details of the saved transaction.
+     * @throws InvalidSymbolsException if the provided stock symbol is invalid.
+     */
     @Override
     public PortfolioTransactionResponse savePortfolioTransaction(String userId, PortfolioTransactionRequest portfolioTransactionRequest) {
 
@@ -48,6 +56,16 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     }
 
+    /**
+     * Retrieves a paginated list of portfolio transactions for a specific user.
+     *
+     * @param userId the ID of the user whose transactions are being fetched.
+     * @param page   the page number to retrieve (use -1 to retrieve all transactions without pagination).
+     * @param size   the number of transactions per page.
+     * @param sort   the sorting criteria for transactions.
+     * @return a paginated list of portfolio transaction responses.
+     * @throws ResourceNotFoundException if no transactions are found for the given user ID.
+     */
     @Override
     public Page<PortfolioTransactionResponse> getPortfolioTransactionsByUserId(String userId, int page, int size, Sort sort) {
 
@@ -83,6 +101,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     }
 
+    /**
+     * Deletes a specific portfolio transaction for a user.
+     *
+     * @param userId        the ID of the user.
+     * @param transactionId the ID of the transaction to delete.
+     * @throws ResourceNotFoundException   if the transaction does not exist for the given user ID and transaction ID.
+     * @throws ResourceNotDeletedException if the transaction was not successfully deleted.
+     */
     @Transactional
     @Override
     public void deletePortfolioTransaction(String userId, long transactionId) {
@@ -99,6 +125,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     }
 
+    /**
+     * Deletes all portfolio transactions for a specific stock symbol and user.
+     *
+     * @param userId     the ID of the user.
+     * @param stockSymbol the stock symbol for which transactions are to be deleted.
+     * @throws ResourceNotFoundException   if no transactions are found for the given stock symbol and user ID.
+     * @throws ResourceNotDeletedException if the transactions were not successfully deleted.
+     */
     @Transactional
     @Override
     public void deleteAllTransactionsByUserIdAndStockSymbol(String userId, String stockSymbol) {
@@ -112,6 +146,17 @@ public class PortfolioServiceImpl implements PortfolioService {
         }
     }
 
+    /**
+     * Retrieves a paginated list of portfolio stocks for a user, enriched with market data.
+     *
+     * @param userId the ID of the user.
+     * @param page   the page number to retrieve (use -1 to retrieve all stocks without pagination).
+     * @param size   the number of stocks per page.
+     * @param sort   the sorting criteria for stocks.
+     * @return a paginated list of portfolio stocks, including market data such as latest price and profit/loss.
+     * @throws ResourceNotFoundException if no stocks are found for the given user ID.
+     * @throws IllegalArgumentException  if stock data is missing for any symbol.
+     */
     @Override
     public Page<PortfolioStockResponse> getUserPortfolioStocks(String userId, int page, int size, Sort sort) {
 
@@ -192,6 +237,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     }
 
+    /**
+     * Helper method to sort a list of portfolio stock responses based on the provided sorting criteria.
+     *
+     * @param list the list of portfolio stock responses to sort.
+     * @param sort the sorting criteria.
+     * @return a sorted list of portfolio stock responses.
+     */
     private List<PortfolioStockResponse> sortPortfolioStockResponses(List<PortfolioStockResponse> list, Sort sort) {
 
         if (sort.isUnsorted()) {
@@ -210,6 +262,13 @@ public class PortfolioServiceImpl implements PortfolioService {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a comparator for sorting portfolio stock responses based on a specific property.
+     *
+     * @param order the sorting order containing the property and direction.
+     * @return a comparator for the specified property.
+     * @throws UnknownSortPropertyException if the property is not recognized.
+     */
     private Comparator<PortfolioStockResponse> getComparator(Sort.Order order) {
         return switch (order.getProperty()) {
             case "stockSymbol" -> Comparator.comparing(PortfolioStockResponse::getStockSymbol);

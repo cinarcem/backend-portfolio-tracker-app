@@ -11,6 +11,7 @@ import java.util.List;
 public interface StocksWatchlistRepository extends JpaRepository<StocksWatchlist,Long> {
 
     List<StocksWatchlist> findByUserId(String userId);
+    void deleteByUserIdAndStockSymbol(String userId, String stockSymbol);
 
     @Query("SELECT sw.stockSymbol FROM StocksWatchlist sw WHERE sw.userId = :userId")
     List<String> findStockSymbolsByUserId(String userId);

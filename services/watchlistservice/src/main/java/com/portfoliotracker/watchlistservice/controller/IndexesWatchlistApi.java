@@ -54,7 +54,7 @@ public class IndexesWatchlistApi {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiCustomResponse.class)))
     })
-    public ResponseEntity<ApiCustomResponse<List<IndexResultResponse>>> addUserIndexesWatchlist(
+    public ResponseEntity<ApiCustomResponse<List<IndexResultResponse>>> addIndexesToWatchlist(
             WebRequest webRequest,
             @Parameter(description = "A list of index symbols to add watchlist.")
             @RequestParam @NotEmpty(message = "Symbols list cannot be empty") List<String> symbols
@@ -165,6 +165,81 @@ public class IndexesWatchlistApi {
 
         return ResponseEntity.ok(apiCustomResponse);
 
+    }
+
+    @DeleteMapping("/indexes")
+    @Operation(
+            summary = "Deletes index symbols from watchlist for user.",
+            description = "This endpoint deletes index symbols from watchlist for user."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode  = "200", description  = "Index deleted from watchlist received successfully.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "207", description  = "Indexes deleted partially.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class))),
+            @ApiResponse(responseCode  = "400", description  = "No indexes deleted from watchlist!",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
+    })
+    public ResponseEntity<ApiCustomResponse<List<IndexResultResponse>>> deleteIndexesFromWatchlist(
+            WebRequest webRequest,
+            @Parameter(description = "Deletes a list of index symbols from watchlist.")
+            @RequestParam @NotEmpty(message = "Symbols list cannot be empty") List<String> symbols
+    ){
+
+        String path = webRequest.getDescription(false).replace("uri=", "");
+        List<ErrorDetails> errors = new ArrayList<>(List.of());
+
+        String userId;
+
+        try {
+            String token = webRequest.getHeader("Authorization");
+            userId = JwtUtil.getJwtSub(token);
+        }catch (Exception UserNotFoundException){
+            throw new UserNotFoundException();
+        }
+
+        List<IndexResultResponse> deletedSymbols = indexesWatchlistService.deleteIndexesFromWatchlist(userId, symbols);
+
+        long failedCount = deletedSymbols.stream()
+                .filter(item -> "failed".equals(item.getStatus()))
+                .count();
+
+        long successCount = deletedSymbols.stream()
+                .filter(item -> "success".equals(item.getStatus()))
+                .count();
+
+        HttpStatus httpStatus;
+        String message;
+
+        if( failedCount == 0){
+            httpStatus = HttpStatus.OK;
+            message = "Indexes successfully deleted from watchlist.";
+        } else if ( successCount>0){
+            httpStatus = HttpStatus.MULTI_STATUS;
+            message = "Indexes deleted partially.";
+        } else {
+            httpStatus = HttpStatus.BAD_REQUEST;
+            message = "No indexes deleted!";
+        }
+
+        ApiCustomResponse<List<IndexResultResponse> > apiCustomResponse = ApiCustomResponse
+                .<List<IndexResultResponse> >builder()
+                .timestamp(Instant.now())
+                .success(true)
+                .status(httpStatus.value())
+                .message(message)
+                .data(deletedSymbols)
+                .errors(errors)
+                .path(path)
+                .build();
+
+        logger.info(String.format("Indexes deleted from watchlist for userId %s.", userId)
+        );
+
+        return ResponseEntity.status(httpStatus).body(apiCustomResponse);
     }
 
 }
