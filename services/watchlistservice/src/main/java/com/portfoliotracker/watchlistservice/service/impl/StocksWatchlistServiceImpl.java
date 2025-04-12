@@ -7,6 +7,7 @@ import com.portfoliotracker.watchlistservice.exception.ResourceNotFoundException
 import com.portfoliotracker.watchlistservice.repository.StocksWatchlistRepository;
 import com.portfoliotracker.watchlistservice.service.MarketDataService;
 import com.portfoliotracker.watchlistservice.service.StocksWatchlistService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -73,6 +74,7 @@ public class StocksWatchlistServiceImpl implements StocksWatchlistService {
      * @param stockSymbols the list of stock symbols to be deleted
      * @return a list of deleted stock symbols
      */
+    @Transactional
     @Override
     public List<StockResultResponse> deleteStocksFromWatchlist(String userId, List<String> stockSymbols) {
         List<StockResultResponse> deletedStocksFromWatchlist = new ArrayList<>();

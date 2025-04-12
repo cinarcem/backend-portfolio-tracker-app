@@ -11,7 +11,6 @@ import java.util.List;
 public interface IndexesWatchlistRepository extends JpaRepository<IndexesWatchlist,Long> {
 
     List<IndexesWatchlist> findByUserId(String userId);
-    boolean existsByUserIdAndIndexSymbol(String userId, String indexSymbol);
     void deleteByUserIdAndIndexSymbol(String userId, String indexSymbol);
 
     @Query("SELECT iw.indexSymbol FROM IndexesWatchlist iw WHERE iw.userId = :userId")
