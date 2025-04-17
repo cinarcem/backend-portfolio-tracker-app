@@ -120,45 +120,53 @@ public class MarketDataServiceImpl implements MarketDataService {
 
         List<StockWithMarketDataResponse> stockWithMarketDataResponses = new ArrayList<>();
 
-        String uri = UriComponentsBuilder.fromUriString("/market-data/api/v1/stocks")
-                .queryParam("symbols", String.join(",", stockSymbols))
-                .build()
-                .toString();
+        try {
+            String uri = UriComponentsBuilder.fromUriString("/market-data/api/v1/stocks")
+                    .queryParam("symbols", String.join(",", stockSymbols))
+                    .build()
+                    .toString();
 
-        ApiCustomResponse<List<MarketDataServiceStockResponse>> serviceResponse = webClient.get()
-                .uri(uri)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<ApiCustomResponse<List<MarketDataServiceStockResponse>>>() {})
-                .block();
+            ApiCustomResponse<List<MarketDataServiceStockResponse>> serviceResponse = webClient.get()
+                    .uri(uri)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<ApiCustomResponse<List<MarketDataServiceStockResponse>>>() {})
+                    .block();
 
-        // Map each symbol to its response or create an empty response if not found
-        for (String stockSymbol : stockSymbols) {
+            // Map each symbol to its response or create an empty response if not found
+            for (String stockSymbol : stockSymbols) {
 
-            StockWithMarketDataResponse stockWithMarketDataResponse;
+                StockWithMarketDataResponse stockWithMarketDataResponse;
 
-            Optional<MarketDataServiceStockResponse> marketDataIndexResponseOptional = serviceResponse.getData().stream()
-                    .filter(s -> s.getStockSymbol().equals(stockSymbol))
-                    .findFirst();
-            if (marketDataIndexResponseOptional.isPresent()) {
+                Optional<MarketDataServiceStockResponse> marketDataIndexResponseOptional = serviceResponse.getData().stream()
+                        .filter(s -> s.getStockSymbol().equals(stockSymbol))
+                        .findFirst();
+                if (marketDataIndexResponseOptional.isPresent()) {
 
-                MarketDataServiceStockResponse marketDataServiceStockResponse = marketDataIndexResponseOptional.get();
-                stockWithMarketDataResponse = StockWithMarketDataResponse.builder()
-                        .stockSymbol(stockSymbol)
-                        .latestValue(marketDataServiceStockResponse.getLatestPrice())
-                        .dailyChangePct(marketDataServiceStockResponse.getDailyChangePct())
-                        .build();
+                    MarketDataServiceStockResponse marketDataServiceStockResponse = marketDataIndexResponseOptional.get();
+                    stockWithMarketDataResponse = StockWithMarketDataResponse.builder()
+                            .stockSymbol(stockSymbol)
+                            .latestValue(marketDataServiceStockResponse.getLatestPrice())
+                            .dailyChangePct(marketDataServiceStockResponse.getDailyChangePct())
+                            .build();
 
-            } else {
-                stockWithMarketDataResponse = StockWithMarketDataResponse.builder()
-                        .stockSymbol(stockSymbol)
-                        .latestValue(null)
-                        .dailyChangePct(null)
-                        .build();
+                } else {
+                    stockWithMarketDataResponse = StockWithMarketDataResponse.builder()
+                            .stockSymbol(stockSymbol)
+                            .latestValue(null)
+                            .dailyChangePct(null)
+                            .build();
+                }
+                stockWithMarketDataResponses.add(stockWithMarketDataResponse);
             }
-            stockWithMarketDataResponses.add(stockWithMarketDataResponse);
+        } catch (WebClientResponseException e) {
+            throw new RuntimeException(String.format("HTTP error while fetching stocks market data... Status Code: '%s'." +
+                    "Response Body: '%s'.",e.getStatusCode(),e.getResponseBodyAsString()));
+        } catch (Exception e) {
+            throw new RuntimeException("An error occurred while fetching market data for given stock symbols. " +
+                    "Exception message: %s" + e.getMessage());
         }
 
-        // Apply sorting
+        // Handle pagination
         stockWithMarketDataResponses = sortStockWithMarketDataResponse(stockWithMarketDataResponses, sort);
 
         // Handle pagination
@@ -234,8 +242,10 @@ public class MarketDataServiceImpl implements MarketDataService {
                 indexWithMarketDataResponses.add(indexWithMarketDataResponse);
             }
 
+            // Handle pagination
             indexWithMarketDataResponses = sortIndexWithMarketDataResponse(indexWithMarketDataResponses, sort);
 
+            // Handle pagination
             if (page < 0) {
                 return new PageImpl<>(
                         indexWithMarketDataResponses,
@@ -260,9 +270,11 @@ public class MarketDataServiceImpl implements MarketDataService {
             return new PageImpl<>(pageContent, pageRequest, totalElements);
 
         } catch (WebClientResponseException e) {
-            throw new RuntimeException("HTTP Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString(), e);
+            throw new RuntimeException(String.format("HTTP error while fetching indexes market data... Status Code: '%s'." +
+                    "Response Body: '%s'.",e.getStatusCode(),e.getResponseBodyAsString()));
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while fetching market data for given index symbols.", e);
+            throw new RuntimeException("An error occurred while fetching market data for given index symbols. " +
+                    "Exception message: %s" + e.getMessage());
         }
     }
 

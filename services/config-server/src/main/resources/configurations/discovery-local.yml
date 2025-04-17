@@ -14,3 +14,23 @@ eureka:
     fetch-registry: false
     serviceUrl:
       defaultZone: ${DISCOVERY_SERVER_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+  endpoint:
+    health:
+      show-details: "always"
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: "Portfolio Tracker App - Discovery"
+    description: "Portfolio Stocks Tracker Api. Designed for monitoring stocks and their market data. *This api designed for demonstration purposes only.*"
+    developer: "Cem Çınar"

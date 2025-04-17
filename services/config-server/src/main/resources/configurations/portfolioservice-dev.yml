@@ -21,9 +21,14 @@ spring:
 
 openapi:
   service:
-    title: Portfolio Service Api doc
+    title: Market Data Api doc
     version: 1.0.0
     url: https://portfolio-tracker-app-dev.up.railway.app
+    description: "*Portfolio Tracker App - This api designed for demonstration purposes only.*"
+    contact:
+      name: "Cem Çınar"
+      email: "cmcnr82@gmail.com"
+      url: "https://"
 
 springdoc:
   api-docs:
@@ -48,4 +53,23 @@ eureka:
     non-secure-port: ${PORTFOLIO_SERVICE_PORT}
     secure-port: 443
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+  endpoint:
+    health:
+      show-details: "always"
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: "Portfolio Tracker App - Portfolio Service"
+    description: "Portfolio Stocks Tracker Api. Designed for monitoring stocks and their market data. *This api designed for demonstration purposes only.*"
+    developer: "Cem Çınar"
 

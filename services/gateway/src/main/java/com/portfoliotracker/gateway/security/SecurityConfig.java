@@ -13,18 +13,33 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    private static final String[] AUTH_WHITELIST = {
+            // Swagger endpoints
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-resources/**",
+            "/webjars/**",
+            // Actuator endpoints
+            "/actuator/health",
+            "/actuator/info"
+    };
+
+    private static final String[] PROTECTED_PATHS = {
+            "/portfolio/api/**",
+            "/market-data/api/**",
+            "/watchlist/api/**"
+    };
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity serverHttpSecurity){
         serverHttpSecurity
                 .cors(withDefaults())
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange( exchange -> exchange
-                        .pathMatchers(HttpMethod.OPTIONS, "/**")
-                        .permitAll()
-                        .pathMatchers("/portfolio/api/**","/market-data/api/**","/watchlist/api/**")
-                        .authenticated()
-                        .anyExchange()
-                        .permitAll()
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .pathMatchers(AUTH_WHITELIST).permitAll()
+                        .pathMatchers(PROTECTED_PATHS).authenticated()
+                        .anyExchange().permitAll()
                 )
                 .oauth2ResourceServer( oath2 -> oath2.jwt(withDefaults()) );
 

@@ -36,6 +36,9 @@ dependencies {
 	implementation ('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'){
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 	}
+	implementation ('org.springframework.boot:spring-boot-starter-actuator'){
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
 	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.3'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
