@@ -1,27 +1,16 @@
 server:
-  port: ${PORTFOLIO_SERVICE_PORT}
+  port: ${MARKET_DATA_PORT}
 
 spring:
   devtools:
     restart:
-      enabled: true
+      enabled: false
     livereload:
-      enabled: true
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate.ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+      enabled: false
 
 openapi:
   service:
-    title: Portfolio Service Api doc
+    title: Market Data Api doc
     version: 1.0.0
     url: ${GATEWAY_URL}
     description: "*Portfolio Tracker App - This api designed for demonstration purposes only.*"
@@ -32,17 +21,23 @@ openapi:
 
 springdoc:
   api-docs:
-    path: /swagger/portfolio/v3/api-docs
+    path: /swagger/market-data/v3/api-docs
   swagger-ui:
-    path: /swagger/portfolio/swagger-ui.html
+    path: /swagger/market-data/swagger-ui.html
 
 eureka:
-  instance:
-    hostname: localhost
   client:
-    fetch-registry: false
-    serviceUrl:
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
       defaultZone: ${DISCOVERY_SERVER_URL}
+  instance:
+    hostname: ${RAILWAY_SERVICE_NAME}
+    preferIpAddress: false
+    non-secure-port-enabled: true
+    secure-port-enabled: false
+    non-secure-port: ${MARKET_DATA_PORT}
+    secure-port: 443
 
 management:
   endpoints:
@@ -60,6 +55,6 @@ management:
 
 info:
   app:
-    name: "Portfolio Tracker App - Portfolio Service"
+    name: "Portfolio Tracker App - Market Data Service"
     description: "Portfolio Stocks Tracker Api. Designed for monitoring stocks and their market data. *This api designed for demonstration purposes only.*"
     developer: "Cem Çınar"

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -240,6 +241,47 @@ public class StocksWatchlistApi {
         );
 
         return ResponseEntity.status(httpStatus).body(apiCustomResponse);
+    }
+
+    @GetMapping("/stocks/sample")
+    @SecurityRequirements
+    @Operation(
+            summary = "Returns a page of sample stock watchlist for demostration.",
+            description = "This endpoint returns a page of sample stock watchlist for demostration."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode  = "200", description  = "Sample stocks watchlist received successfully.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
+    })
+    public ResponseEntity<ApiCustomResponse<Page<StockWithMarketDataResponse>>> getSampleStocksWatchlist(
+            WebRequest webRequest,
+            @Parameter(description = "Set page -1 to receive all stocks in sample stock watchlist.")
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "stockSymbol") String sortBy,
+            @RequestParam(defaultValue = "true") boolean descending
+    ){
+        String path = webRequest.getDescription(false).replace("uri=", "");
+        List<ErrorDetails> errors = new ArrayList<>(List.of());
+
+        Sort sort = descending ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Page<StockWithMarketDataResponse> stockWithMarketDataResponses = stocksWatchlistService
+                .getSampleStockWatchlist(page, size, sort);
+
+        ApiCustomResponse<Page<StockWithMarketDataResponse> > apiCustomResponse = ApiCustomResponse
+                .<Page<StockWithMarketDataResponse> >builder()
+                .timestamp(Instant.now())
+                .success(true)
+                .status(HttpStatus.OK.value())
+                .message("Sample stock watchlist received successfully.")
+                .data(stockWithMarketDataResponses)
+                .errors(errors)
+                .path(path)
+                .build();
+
+        return ResponseEntity.ok(apiCustomResponse);
+
     }
 
 }

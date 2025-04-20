@@ -4,9 +4,9 @@ server:
 spring:
   devtools:
     restart:
-      enabled: true
+      enabled: false
     livereload:
-      enabled: true
+      enabled: false
 
 eureka:
   client:

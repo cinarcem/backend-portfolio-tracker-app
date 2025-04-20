@@ -14,6 +14,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
+            //Sample data endpoints
+            "/watchlist/api/v1/indexes/sample",
+            "/watchlist/api/v1/stocks/sample",
             // Swagger endpoints
             "/v3/api-docs/**",
             "/swagger-ui/**",
@@ -21,7 +24,7 @@ public class SecurityConfig {
             "/webjars/**",
             // Actuator endpoints
             "/actuator/health",
-            "/actuator/info"
+            "/actuator/info",
     };
 
     private static final String[] PROTECTED_PATHS = {

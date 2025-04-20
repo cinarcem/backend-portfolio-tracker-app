@@ -12,7 +12,7 @@ openapi:
   service:
     title: Market Data Api doc
     version: 1.0.0
-    url: http://localhost:${GATEWAY_PORT}
+    url: ${GATEWAY_URL}
     description: "*Portfolio Tracker App - This api designed for demonstration purposes only.*"
     contact:
       name: "Cem Çınar"

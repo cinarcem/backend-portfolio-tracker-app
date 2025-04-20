@@ -11,6 +11,7 @@ public interface IndexesWatchlistService {
 
     List<IndexResultResponse> addIndexToWatchlist(String userId, List<String>indexSymbols);
     Page<IndexWithMarketDataResponse> getWatchlistIndexes(String userId, int page, int size, Sort sort);
+    Page<IndexWithMarketDataResponse> getSampleIndexWatchlist(int page, int size, Sort sort);
 
     List<IndexResultResponse>deleteIndexesFromWatchlist(String userId, List<String> symbols);
 }

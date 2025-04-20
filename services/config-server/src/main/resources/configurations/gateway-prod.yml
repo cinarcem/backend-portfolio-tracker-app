@@ -1,0 +1,134 @@
+server:
+  port: ${GATEWAY_PORT}
+
+spring:
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI}
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: ${ALLOWED_ORIGINS}
+            allowed-methods:
+              - GET
+              - POST
+              - UPDATE
+              - PATCH
+              - OPTIONS
+              - PUT
+              - DELETE
+            allowed-headers: ${ALLOWED_HEADERS}
+        add-to-simple-url-handler-mapping: true
+      routes:
+        - id: marketdataapi
+          uri: lb://marketdata
+          predicates:
+            - Path=/market-data/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+        - id: portfolioapi
+          uri: lb://portfolioservice
+          predicates:
+            - Path=/portfolio/api/**
+            - Method=GET,POST,DELETE
+          filters:
+            - RemoveRequestHeader=Cookie
+        - id: watchlistapi
+          uri: lb://watchlistservice
+          predicates:
+            - Path=/watchlist/api/**
+            - Method=GET,POST,DELETE
+          filters:
+            - RemoveRequestHeader=Cookie
+        - id: swaggermarketdata
+          uri: lb://portfolioservice
+          predicates:
+            - Path=/swagger/portfolio/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+        - id: swaggerportfolio
+          uri: lb://marketdata
+          predicates:
+            - Path=/swagger/market-data/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+        - id: swaggerwatchlist
+          uri: lb://watchlistservice
+          predicates:
+            - Path=/swagger/watchlist/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+
+springdoc:
+  enable-native-support: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: /swagger/market-data/v3/api-docs
+        name: Market Data Api
+        primaryName: Market Data Api
+      - url: /swagger/portfolio/v3/api-docs
+        name: Portfolio Api
+        primaryName: Portfolio Api
+      - url: /swagger/watchlist/v3/api-docs
+        name: Watchlist Api
+        primaryName: Watchlist Api
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG
+    org.springframework.web: DEBUG
+
+eureka:
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
+      defaultZone: ${DISCOVERY_SERVER_URL}
+  instance:
+    hostname: ${RAILWAY_SERVICE_NAME}
+    preferIpAddress: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+  endpoint:
+    health:
+      show-details: "always"
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: "Portfolio Tracker App - Gateway"
+    description: "Portfolio Stocks Tracker Api. Designed for monitoring stocks and their market data. *This api designed for demonstration purposes only.*"
+    developer: "Cem Çınar"

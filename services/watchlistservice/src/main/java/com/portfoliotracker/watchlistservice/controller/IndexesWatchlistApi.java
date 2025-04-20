@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -107,7 +109,7 @@ public class IndexesWatchlistApi {
                 .path(path)
                 .build();
 
-        logger.info(String.format("New index added to wathclist for user '%s'.", userId));
+        logger.info(String.format("New index added to watchlist for user '%s'.", userId));
 
         return ResponseEntity.status(httpStatus).body(apiCustomResponse);
 
@@ -240,6 +242,46 @@ public class IndexesWatchlistApi {
         );
 
         return ResponseEntity.status(httpStatus).body(apiCustomResponse);
+    }
+
+    @GetMapping("/indexes/sample")
+    @SecurityRequirements
+    @Operation(
+            summary = "Returns a page of sample index watchlist for demostration.",
+            description = "This endpoint returns a page of sample index watchlist for demostration."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode  = "200", description  = "Sample index watchlist received successfully.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiCustomResponse.class)))
+    })
+    public ResponseEntity<ApiCustomResponse<Page<IndexWithMarketDataResponse>>> getSampleIndexesWatchlist(
+            WebRequest webRequest,
+            @Parameter(description = "Set page -1 to receive all indexes in sample stock watchlist.")
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "indexSymbol") String sortBy,
+            @RequestParam(defaultValue = "true") boolean descending
+    ){
+        String path = webRequest.getDescription(false).replace("uri=", "");
+        List<ErrorDetails> errors = new ArrayList<>(List.of());
+
+        Sort sort = descending ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Page<IndexWithMarketDataResponse> indexWithMarketDataResponses = indexesWatchlistService
+                .getSampleIndexWatchlist(page, size, sort);
+
+        ApiCustomResponse<Page<IndexWithMarketDataResponse>> apiCustomResponse = ApiCustomResponse
+                .<Page<IndexWithMarketDataResponse>>builder()
+                .timestamp(Instant.now())
+                .success(true)
+                .status(HttpStatus.OK.value())
+                .message("Sample index watchlist received successfully.")
+                .data(indexWithMarketDataResponses)
+                .errors(errors)
+                .path(path)
+                .build();
+
+        return ResponseEntity.ok(apiCustomResponse);
     }
 
 }

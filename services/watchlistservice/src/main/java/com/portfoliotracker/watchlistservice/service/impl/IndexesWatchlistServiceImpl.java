@@ -9,6 +9,7 @@ import com.portfoliotracker.watchlistservice.service.IndexesWatchlistService;
 import com.portfoliotracker.watchlistservice.service.MarketDataService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ public class IndexesWatchlistServiceImpl implements IndexesWatchlistService {
 
     private final IndexesWatchlistRepository indexesWatchlistRepository;
     private final MarketDataService marketDataService;
+
+    @Value("${SAMPLE_INDEXES:XU100,XU030}")
+    private String sampleIndexSymbols;
 
     /**
      * Adds a list of index symbols to the user's watchlist.
@@ -72,6 +76,22 @@ public class IndexesWatchlistServiceImpl implements IndexesWatchlistService {
         if(indexSymbols.isEmpty()){
             throw new ResourceNotFoundException("Watchlist indexes","userId",userId);
         }
+
+        return marketDataService.fetchIndexesMarketData(indexSymbols, page, size, sort);
+    }
+
+    /**
+     * Retrieves the sample index watchlist stocks enriched with market data and paginated.
+     *
+     * @param page the page number for pagination
+     * @param size the page size for pagination
+     * @param sort the sorting criteria
+     * @return a paginated list of sample index watchlist with market data
+     */
+    @Override
+    public Page<IndexWithMarketDataResponse> getSampleIndexWatchlist(int page, int size, Sort sort) {
+
+        List<String> indexSymbols = List.of(sampleIndexSymbols.split(","));
 
         return marketDataService.fetchIndexesMarketData(indexSymbols, page, size, sort);
     }

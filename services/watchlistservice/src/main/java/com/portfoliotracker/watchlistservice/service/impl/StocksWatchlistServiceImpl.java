@@ -9,6 +9,7 @@ import com.portfoliotracker.watchlistservice.service.MarketDataService;
 import com.portfoliotracker.watchlistservice.service.StocksWatchlistService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ public class StocksWatchlistServiceImpl implements StocksWatchlistService {
 
     private final StocksWatchlistRepository stocksWatchlistRepository;
     private final MarketDataService marketDataService;
+
+    @Value("${SAMPLE_STOCKS:KOZAL,SASA}")
+    private String sampleStockSymbols;
 
     /**
      * Adds a list of stock symbols to the specified user's watchlist.
@@ -67,6 +71,7 @@ public class StocksWatchlistServiceImpl implements StocksWatchlistService {
         return marketDataService.fetchStocksMarketData(stockSymbols, page, size, sort);
     }
 
+
     /**
      * Deletes a list of stock symbols from user's watchlist.
      *
@@ -84,6 +89,22 @@ public class StocksWatchlistServiceImpl implements StocksWatchlistService {
         }
 
         return deletedStocksFromWatchlist;
+    }
+
+    /**
+     * Retrieves the sample stock watchlist stocks enriched with market data and paginated.
+     *
+     * @param page the page number for pagination
+     * @param size the page size for pagination
+     * @param sort the sorting criteria
+     * @return a paginated list of sample stock watchlist with market data
+     */
+    @Override
+    public Page<StockWithMarketDataResponse> getSampleStockWatchlist(int page, int size, Sort sort) {
+
+        List<String> stockSymbols = List.of(sampleStockSymbols.split(","));
+
+        return marketDataService.fetchStocksMarketData(stockSymbols, page, size, sort);
     }
 
     /**

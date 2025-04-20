@@ -4,9 +4,9 @@ server:
 spring:
   devtools:
     restart:
-      enabled: true
+      enabled: false
     livereload:
-      enabled: true
+      enabled: false
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -21,7 +21,7 @@ spring:
 
 openapi:
   service:
-    title: Portfolio Service Api doc
+    title: Market Data Api doc
     version: 1.0.0
     url: ${GATEWAY_URL}
     description: "*Portfolio Tracker App - This api designed for demonstration purposes only.*"
@@ -37,12 +37,18 @@ springdoc:
     path: /swagger/portfolio/swagger-ui.html
 
 eureka:
-  instance:
-    hostname: localhost
   client:
-    fetch-registry: false
-    serviceUrl:
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
       defaultZone: ${DISCOVERY_SERVER_URL}
+  instance:
+    hostname: ${RAILWAY_SERVICE_NAME}
+    preferIpAddress: false
+    non-secure-port-enabled: true
+    secure-port-enabled: false
+    non-secure-port: ${PORTFOLIO_SERVICE_PORT}
+    secure-port: 443
 
 management:
   endpoints:
