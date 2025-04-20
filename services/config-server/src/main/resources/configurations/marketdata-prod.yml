@@ -12,7 +12,7 @@ openapi:
   service:
     title: Market Data Api doc
     version: 1.0.0
-    url: https://keycloak-porfolio-tracker-app-dev.up.railway.app
+    url: https://portfolio-tracker-app-dev.up.railway.app
     description: "*Portfolio Tracker App - This api designed for demonstration purposes only.*"
     contact:
       name: "Cem Çınar"
