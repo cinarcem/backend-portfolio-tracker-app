@@ -133,7 +133,7 @@ public class StocksWatchlistApi {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "stockSymbol") String sortBy,
-            @RequestParam(defaultValue = "true") boolean descending
+            @RequestParam(defaultValue = "false") boolean descending
     ){
 
         String path = webRequest.getDescription(false).replace("uri=", "");
@@ -260,7 +260,7 @@ public class StocksWatchlistApi {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "stockSymbol") String sortBy,
-            @RequestParam(defaultValue = "true") boolean descending
+            @RequestParam(defaultValue = "false") boolean descending
     ){
         String path = webRequest.getDescription(false).replace("uri=", "");
         List<ErrorDetails> errors = new ArrayList<>(List.of());

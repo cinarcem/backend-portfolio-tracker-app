@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.portfoliotracker'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 
 java {
 	toolchain {
@@ -24,6 +24,7 @@ ext {
 dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	implementation 'org.springframework.boot:spring-boot-starter-log4j2:3.4.1'
+	implementation 'org.hibernate.validator:hibernate-validator:8.0.0.Final'
 	implementation ('org.springframework.cloud:spring-cloud-starter-config'){
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 	}

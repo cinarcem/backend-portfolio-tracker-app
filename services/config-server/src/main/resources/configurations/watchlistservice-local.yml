@@ -23,7 +23,7 @@ openapi:
   service:
     title: Watchlist Service Api doc
     version: 1.0.0
-    url: ${GATEWAY_URL}
+    url: http://localhost:${GATEWAY_PORT}
     description: "*Portfolio Tracker App - This api designed for demonstration purposes only.*"
     contact:
       name: "Cem Çınar"

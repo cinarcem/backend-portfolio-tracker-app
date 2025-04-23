@@ -97,12 +97,6 @@ springdoc:
         name: Watchlist Api
         primaryName: Watchlist Api
 
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
-    reactor.netty: DEBUG
-    org.springframework.web: DEBUG
-
 eureka:
   client:
     registerWithEureka: true
