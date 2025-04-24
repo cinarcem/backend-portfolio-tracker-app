@@ -23,7 +23,7 @@ openapi:
   service:
     title: Watchlist Service Api doc
     version: 1.0.0
-    url: https://portfolio-tracker-app-dev.up.railway.app
+    url: https://portfolio-tracker-app.up.railway.app
     description: "*Portfolio Tracker App - This api designed for demonstration purposes only.*"
     contact:
       name: "Cem Çınar"
