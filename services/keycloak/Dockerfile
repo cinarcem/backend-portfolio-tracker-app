@@ -5,7 +5,7 @@ ARG KEYCLOAK_ADMIN_PASSWORD
 ARG KC_DB
 ARG KC_DB_USERNAME
 ARG KC_DB_PASSWORD
-ARG KC_DB_URL
+ARG KC_DB_URLgit -
 ARG KC_HOSTNAME
 ARG KC_PROXY
 ARG KC_HOSTNAME_PORT
@@ -20,6 +20,8 @@ RUN /opt/keycloak/bin/kc.sh build
 FROM quay.io/keycloak/keycloak:25.0.4
 
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
+
+COPY themes /opt/keycloak/themes
 
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
 
