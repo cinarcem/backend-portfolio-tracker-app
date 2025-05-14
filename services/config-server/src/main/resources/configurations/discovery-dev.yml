@@ -17,6 +17,7 @@ management:
   metrics:
     enable:
       tomcat: false # Tomcat metcis disabled due to railway error
+      jvm: false
   endpoints:
     web:
       exposure:
