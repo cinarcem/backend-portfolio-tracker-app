@@ -42,8 +42,10 @@ eureka:
 management:
   metrics:
     enable:
-      tomcat: false # Tomcat metrics disabled due to railway deployment server error
+      all: false  # Tomcat metrics disabled due to railway deployment server error
+      tomcat: false
       jvm: false
+      system: false  # Processor metriklerini devre dışı bırak
   endpoints:
     web:
       exposure:
