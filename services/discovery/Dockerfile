@@ -17,11 +17,6 @@ COPY --from=build /app/build/libs/*.jar app.jar
 
 ENV TZ=Europe/Istanbul
 
-#update for railway.app metal edge server error
-ENV JAVA_TOOL_OPTIONS="-Djdk.internal.platform.metrics.enable=false -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Dspring.main.lazy-initialization=true"
-RUN addgroup -S spring && adduser -S spring -G spring
-USER spring
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 
