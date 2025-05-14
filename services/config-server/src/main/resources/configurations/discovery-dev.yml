@@ -16,7 +16,7 @@ eureka:
 management:
   metrics:
     enable:
-      tomcat: false # Tomcat metcis disabled due to railway error
+      tomcat: false # Tomcat metrics disabled due to railway deployment server error
       jvm: false
   endpoints:
     web:
