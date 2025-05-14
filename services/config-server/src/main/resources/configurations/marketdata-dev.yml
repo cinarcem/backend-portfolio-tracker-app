@@ -40,6 +40,10 @@ eureka:
     secure-port: 443
 
 management:
+  metrics:
+    enable:
+      tomcat: false # Tomcat metrics disabled due to railway deployment server error
+      jvm: false
   endpoints:
     web:
       exposure:
