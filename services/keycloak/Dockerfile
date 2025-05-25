@@ -15,14 +15,13 @@ ARG KC_HTTP_ENABLED
 ARG PROXY_ADDRESS_FORWARDING
 ARG QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY
 
+COPY themes /opt/keycloak/themes
 RUN /opt/keycloak/bin/kc.sh build
 
 FROM quay.io/keycloak/keycloak:25.0.4
 
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 
-COPY themes /opt/keycloak/themes
-
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
 
-CMD ["start", "--optimized", "--import-realm"]
+CMD ["start", "--optimized", "--import-realm", "--spi-theme-cache-enabled=false"]
