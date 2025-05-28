@@ -126,8 +126,22 @@ public class StockServiceImpl implements StockService {
                 logger.error("Error processing row: {}", row.toString(), e);
             }
         }
+        // Corrupted market data can be retrived just before openning market.
+        // The section check if it is corrupted.
+        long possibleCorruptedDataCount = updatedStocksMarketData
+                .values()
+                .stream()
+                .filter(
+                        stock -> stock.getDailyChangePct().compareTo(new BigDecimal("0.43"))  == 0
+                )
+                .count();
+        Boolean isMarketDataInvalid = (((double) possibleCorruptedDataCount / updatedStocksMarketData.keySet().size()) * 100) > 20;
 
-        stocksMarketData = updatedStocksMarketData;
+        if (!isMarketDataInvalid) {
+            stocksMarketData = updatedStocksMarketData;
+        }
+
+
     }
 
     private BigDecimal parseBigDecimal(String value) {
