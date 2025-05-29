@@ -132,7 +132,7 @@ public class StockServiceImpl implements StockService {
                 .values()
                 .stream()
                 .filter(
-                        stock -> stock.getDailyChangePct().compareTo(new BigDecimal("0.43"))  == 0
+                        stock -> stock.getDailyChangePct().compareTo(new BigDecimal("-100.00"))  == 0
                 )
                 .count();
         Boolean isMarketDataInvalid = (((double) possibleCorruptedDataCount / updatedStocksMarketData.keySet().size()) * 100) > 20;
