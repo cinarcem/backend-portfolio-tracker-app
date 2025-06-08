@@ -139,6 +139,8 @@ public class StockServiceImpl implements StockService {
 
         if (!isMarketDataInvalid) {
             stocksMarketData = updatedStocksMarketData;
+        } else {
+            logger.warn("Market data source url has invalid stock market data. This update will be skipped.");
         }
 
 
