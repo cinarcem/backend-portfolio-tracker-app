@@ -16,5 +16,6 @@ EXPOSE ${MARKET_DATA_PORT}
 COPY --from=build /app/build/libs/*.jar app.jar
 
 ENV TZ=Europe/Istanbul
+ENV JAVA_OPTS="-Xms128m -Xmx512m -XX:MaxMetaspaceSize=128m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom"
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
