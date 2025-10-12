@@ -27,8 +27,6 @@ public class StockServiceImpl implements StockService {
     @Autowired
     private Environment env;
 
-    private Document document;
-
     @Value(("${STOCK_DATA_URL}"))
     private String stockDataUrl;
 
@@ -80,15 +78,15 @@ public class StockServiceImpl implements StockService {
 
         try {
         logger.info("Fetching stock data from {}", stockDataUrl);
-        document = Jsoup.connect(Objects.requireNonNull(stockDataUrl)).get();
+            Document document = Jsoup.connect(Objects.requireNonNull(stockDataUrl)).timeout(90000).get();
         logger.info("Successfully fetched stock data from {} ", stockDataUrl);
-        updateStocksMarketData();
+        updateStocksMarketData(document);
         } catch (Exception e) {
             logger.error("Failed to fetch stock data from {}. Error: {}", stockDataUrl, e.getMessage(), e);
         }
     }
 
-    private void  updateStocksMarketData(){
+    private void  updateStocksMarketData(Document document){
         Map<String, StockResponse> updatedStocksMarketData = new HashMap<>();
 
         if (document == null){
@@ -138,7 +136,8 @@ public class StockServiceImpl implements StockService {
         Boolean isMarketDataInvalid = (((double) possibleCorruptedDataCount / updatedStocksMarketData.keySet().size()) * 100) > 20;
 
         if (!isMarketDataInvalid) {
-            stocksMarketData = updatedStocksMarketData;
+            stocksMarketData.clear();
+            stocksMarketData.putAll(updatedStocksMarketData);
         } else {
             logger.warn("Market data source url has invalid stock market data. This update will be skipped.");
         }
