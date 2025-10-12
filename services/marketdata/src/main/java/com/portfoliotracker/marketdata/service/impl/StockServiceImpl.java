@@ -78,7 +78,7 @@ public class StockServiceImpl implements StockService {
 
         try {
         logger.info("Fetching stock data from {}", stockDataUrl);
-        Document document = Jsoup.connect(Objects.requireNonNull(stockDataUrl)).get();
+        Document document = Jsoup.connect(Objects.requireNonNull(stockDataUrl)).timeout(90000).get();
         logger.info("Successfully fetched stock data from {} ", stockDataUrl);
         updateStocksMarketData(document);
         } catch (Exception e) {
