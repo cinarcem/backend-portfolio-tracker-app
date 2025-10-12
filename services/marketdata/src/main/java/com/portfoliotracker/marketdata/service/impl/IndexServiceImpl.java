@@ -27,8 +27,6 @@ public class IndexServiceImpl implements IndexService {
     @Autowired
     private Environment env;
 
-    private Document document;
-
     @Value("${INDEX_DATA_URL}")
     private String indexDataUrl;
 
@@ -89,15 +87,15 @@ public class IndexServiceImpl implements IndexService {
 
         try {
             logger.info("Fetching indexes data from {}", indexDataUrl);
-            document = Jsoup.connect(Objects.requireNonNull(indexDataUrl)).get();
+            Document document = Jsoup.connect(Objects.requireNonNull(indexDataUrl)).get();
             logger.info("Successfully fetched indexes data from {} ", indexDataUrl);
-            updateIndexesMarketData();
+            updateIndexesMarketData(document);
         } catch (Exception e) {
             logger.error("Failed to fetch indexes data from {}. Error: {}", indexDataUrl, e.getMessage(), e);
         }
     }
 
-    private void  updateIndexesMarketData(){
+    private void  updateIndexesMarketData(Document document){
 
         Map<String, IndexResponse> updatedIndexesMarketData = new HashMap<>();
 
@@ -140,8 +138,8 @@ public class IndexServiceImpl implements IndexService {
             }catch (Exception e){
                 logger.error("Error processing row: {}", row.toString(), e);
             }
-
-            indexesMarketData = updatedIndexesMarketData;
+            indexesMarketData.clear();
+            indexesMarketData.putAll(updatedIndexesMarketData);
 
         }
 
