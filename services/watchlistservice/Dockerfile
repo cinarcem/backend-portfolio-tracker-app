@@ -8,7 +8,7 @@ COPY src ./src
 
 RUN gradle build -x test --no-daemon
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
 EXPOSE ${WATCHLIST_SERVICE_PORT}
@@ -16,5 +16,6 @@ EXPOSE ${WATCHLIST_SERVICE_PORT}
 COPY --from=build /app/build/libs/*.jar app.jar
 
 ENV TZ=Europe/Istanbul
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC -Xlog:gc*:stdout:time,uptime,level,tags"
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
