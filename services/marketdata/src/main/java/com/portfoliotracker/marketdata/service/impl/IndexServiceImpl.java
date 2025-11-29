@@ -87,7 +87,10 @@ public class IndexServiceImpl implements IndexService {
 
         try {
             logger.info("Fetching indexes data from {}", indexDataUrl);
-            Document document = Jsoup.connect(Objects.requireNonNull(indexDataUrl)).timeout(90000).get();
+            Document document = Jsoup.connect(Objects.requireNonNull(indexDataUrl))
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
+                    .timeout(90000)
+                    .get();
             logger.info("Successfully fetched indexes data from {} ", indexDataUrl);
             updateIndexesMarketData(document);
         } catch (Exception e) {
