@@ -16,8 +16,6 @@ EXPOSE ${WATCHLIST_SERVICE_PORT}
 COPY --from=build /app/build/libs/*.jar app.jar
 
 ENV TZ=Europe/Istanbul
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC -Xlog:gc*:stdout:time,uptime,level,tags"
-
 ENV JAVA_OPTS="\
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=75 \

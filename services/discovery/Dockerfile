@@ -16,7 +16,6 @@ EXPOSE ${DISCOVERY_PORT}
 COPY --from=build /app/build/libs/*.jar app.jar
 
 ENV TZ=Europe/Istanbul
-
 ENV JAVA_OPTS="\
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=75 \
