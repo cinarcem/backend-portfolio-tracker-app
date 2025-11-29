@@ -8,7 +8,7 @@ COPY src ./src
 
 RUN gradle build -x test --no-daemon
 
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 EXPOSE ${GATEWAY_PORT}
@@ -16,5 +16,13 @@ EXPOSE ${GATEWAY_PORT}
 COPY --from=build /app/build/libs/*.jar app.jar
 
 ENV TZ=Europe/Istanbul
+ENV JAVA_OPTS="\
+  -XX:+UseContainerSupport \
+  -XX:MaxRAMPercentage=75 \
+  -XX:+UseG1GC \
+  -Xms256m \
+  -Xmx512m \
+  -Xlog:gc*:stdout:time,uptime,level,tags \
+"
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
